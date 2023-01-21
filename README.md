@@ -5,7 +5,9 @@ A brief description of the project and its purpose.
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ## Prerequisites
-What things you need to install the software and how to install them. For example:
+What things you need to install the software and how to install them. 
+
+For example:
 Java 8 or higher
 Maven 3.6 or higher
 
