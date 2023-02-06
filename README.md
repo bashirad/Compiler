@@ -1,11 +1,11 @@
 # Project Title
 A brief description of the project and its purpose.
 
-## Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
 ## Grade Main Branch
 Most up to date code will reside in the main branch.
+
+## Getting Started
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ## Prerequisites
 What things you need to install the software and how to install them. 
