@@ -17,15 +17,14 @@ public class Lexer {
 
 
         /** Read the file data */
-        //lexer.lexer.readFile(path);
         Lexer.readFile("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
         Tokens token1;
         if (1 == 1) {
-            token1 = new Tokens("OPEN BLOCK", "[ { ]", 1, 1);
+            token1 = new Tokens("OPEN BLOCK", "{", 1, 1);
         }
 
         /** Log information out to the output screen */
-        log(1, true, "LEXER", token1.lexmineName, token1.symbol,
+        log(1, true, "Lexer", token1.lexemeName, token1.symbol,
                 token1.lineNum, token1.positionNum);
     }
 
@@ -36,7 +35,7 @@ public class Lexer {
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
                 String data = myReader.nextLine();
-                System.out.println(data);
+                /** System.out.println(data);   */
             }
             myReader.close();
         } catch (FileNotFoundException e) {
@@ -51,7 +50,8 @@ public class Lexer {
         if (debug) {
             System.out.println("INFO Lexer - Lexing program " + progNum + " ... ");
             System.out.println("DEBUG Lexer - OPEN_BLOCK [ { ] found at (1:1)");
-            //System.out.println("DEBUG " + compilerStage + " - " + token);
+            System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
+                                + tokenLineNum + ":" + tokenPosNum + ")");
         }
     }
 

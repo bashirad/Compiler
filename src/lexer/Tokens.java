@@ -1,18 +1,17 @@
 package lexer;
 
 public class Tokens {
-    String lexmineName;
+    String lexemeName;
     String symbol;
     int lineNum;
     int positionNum;
-    public Tokens (String lexmineName, String symbol, int lineNum, int positionNum ) {
-        // TODO search for how to access these tokens and print them
-        this.lexmineName = lexmineName;
+    public Tokens (String lexemeName, String symbol, int lineNum, int positionNum ) {
+
+        /** initialize variables    */
+        this.lexemeName = lexemeName;
         this.symbol = symbol;
         this.lineNum = lineNum;
         this.positionNum = positionNum;
     }
-    public void getLexmineName() {
 
-    }
 }
