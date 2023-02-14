@@ -39,3 +39,17 @@ do not hardcode the filename
 Line and position numbers should be passed with the Tokens
 
 have open quote and close quote symbols
+
+
+TEST CODE IS HERE:
+
+{}$
+{{{{{{}}}}}}$
+{{{{{{}}} /* comments are ignored */ }}}}$
+{ /* comments are still ignored */ int @}$
+{
+ int a
+ a = a
+ string b
+ a = b
+}$
