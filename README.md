@@ -1,5 +1,5 @@
 # Project Title
-A brief description of the project and its purpose.
+This project is to build a compiler in Java that will compile simple programs. The grammar of the programs will be included in the repository.
 
 ## Grade Main Branch
 Most up to date code will reside in the main branch.
