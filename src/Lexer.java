@@ -1,40 +1,176 @@
 import java.io.*;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Lexer {
 
-    private static String OPEN_BLOCK;
-    private static String CLOSE_BLOCK;
-    private static String ID;
-    private static String I_TYPE;
-    private static String EOP;
-    private static String ASSIGN_OP;
-    private static String OPEN_PARENTHESIS;
-    private static String CLOSE_PARENTHESIS;
-    private static String OPEN_QUOTES;
-    private static String CLOSE_QUOTES;
-    private static String KEYWORDS;
-    private static String DIGIT;
-    private static String WHITE_SPACE;
-    private static String SYMBOLS;
     private static int LINE_NUMBER = 1;
     private static int POSITION_NUMBER = 0;
+    private static Tokens currentTokenID;
+    private static Tokens currentTokenKeyword;
+    private static StringBuilder strBuilder;
     private static int PROGRAM_NUMBER = 1;
-    private static int lastPosition = -1;
-    private static int currentPosition = 0;
-    private static String KEYWORD_CANDIDATE = " ";
 
 
+    public static void main(String[] args) {
+        init("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
+    }
     public static void init( String path) {
 
+        System.out.println("\nINFO Lexer - Lexing program " + 1 + " ... ");
         /** start lexing the source code */
         scan(path);
 
     }
 
-    /** Read the source code that is the file */
+    /**
+     * This method scans the source code and finds the lexemes or the valid words
+     */
+    public static void scan(String path) {
+
+        String TOKEN_CANDIDATE = "";
+        strBuilder = new StringBuilder(TOKEN_CANDIDATE);
+
+        // start wth keywords and create empty string and append the char
+        String code = readChars(path);
+
+        int curPos;
+        int beginPos = 0;
+        int endPos = 0;
+        int keywordNum = 0;
+
+        // stream the characters in the string
+        for (int i = 0; i < code.length(); i++) {
+            char currentCharacter = code.charAt(i);
+            //System.out.println(ch);
+
+
+            if (isID(currentCharacter)) {
+                String tokenSymbol = "";
+                tokenSymbol += currentCharacter;
+                currentTokenID = new Tokens("ID", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+
+                curPos = i;
+
+                //TODO Correct the position and line numbers
+                for(int j = i; j < code.length(); j++) {
+                    char curChar = code.charAt(j);
+                    if (!isWHITESPACE(curChar) && !isSYMBOL(curChar) && !isDIGIT(curChar)){
+
+                        strBuilder.append(curChar);
+                        beginPos = code.indexOf(currentCharacter);
+                        endPos = 0;
+
+                        // code for recognizing keywords using RegEx
+                        String KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
+                        Pattern patternKeyword = Pattern.compile("\\b" + KEYWORDS + "\\b", Pattern.CASE_INSENSITIVE);
+                        Matcher matchKeyword = patternKeyword.matcher(String.valueOf(strBuilder));
+
+                        if (matchKeyword.matches()) {
+                            currentTokenKeyword = new Tokens("KEYWORD", matchKeyword.group(), LINE_NUMBER, POSITION_NUMBER);
+                            endPos = i;
+                            keywordNum++;
+                            curPos = j;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                if (keywordNum != 0) {
+                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
+                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenKeyword.lexemeName,
+                            currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
+                    keywordNum = 0;
+                } else {
+                    POSITION_NUMBER++;
+                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenID.lexemeName,
+                            currentTokenID.symbol, LINE_NUMBER, POSITION_NUMBER);
+                }
+                strBuilder.delete(0, strBuilder.length());
+                i = curPos;
+
+            } else {
+                if (isSYMBOL(currentCharacter)) {
+
+                    // TODO if quote then read ahead until another quote appears, then consider the entire thing to be a string
+                    if (strBuilder.isEmpty()) {
+                        String tokenSymbol = "";
+                        tokenSymbol += currentCharacter;
+                        if (Objects.equals((getTokenName(tokenSymbol)), "ASSIGNMENT_OP")) {
+                            if (code.charAt(i+1) == '=') {
+                                tokenSymbol += '=';
+                                i++;
+                            }
+                        } else if (Objects.equals(getTokenName(tokenSymbol), "NOT_EQUAL_TO")) {
+                            if (code.charAt(i+1) == '=') {
+                                tokenSymbol += '=';
+                                i++;
+                            }
+                        } else if (Objects.equals(getTokenName(tokenSymbol), "QUOTE")) {
+                            String str = "";
+                            str += '\u0022';
+                            for (int s = i+1; s < code.length(); s++) {
+                                char curChar = code.charAt(s);
+
+                                if (curChar == '"') {
+                                    str += String.valueOf(strBuilder);
+                                    i = s;
+                                    POSITION_NUMBER = POSITION_NUMBER + str.length();
+                                    break;
+                                } else {
+                                    strBuilder.append(curChar);
+                                }
+                            }
+                            str += '"';
+                            tokenSymbol = str;
+                        }
+
+                        POSITION_NUMBER++;
+                        Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                currentToken.lineNum, currentToken.positionNum);
+                        if (Objects.equals(getTokenName(tokenSymbol), "EOP")) {
+                            PROGRAM_NUMBER++;
+                            System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
+                        }
+                    }
+                } else {
+                    if (isDIGIT(currentCharacter)) {
+                        if (strBuilder.isEmpty()) {
+                            String tokenSymbol = "";
+                            tokenSymbol += currentCharacter;
+
+                            Tokens currentToken = new Tokens("DIGIT", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                    currentToken.lineNum, currentToken.positionNum);
+                        }
+                    }  else {
+                        if (isWHITESPACE(currentCharacter)) {
+                            // ignore and do nothing because it is a white space
+                        } else {
+                            System.out.println("ERROR Lexer - Unrecognized Token  found at ("
+                                    + LINE_NUMBER + ":" + POSITION_NUMBER + ")");
+                        }
+                    }
+
+                    POSITION_NUMBER++;
+                    if ('\n' == code.charAt(i)) {
+                        LINE_NUMBER++;
+                        POSITION_NUMBER = 0;
+                    }
+
+                }
+            }
+        }
+
+    }
+
+    /**
+     * This method reads the string file char by char
+    */
     public static String readChars (String path) {
 
         int lastPosition = 0;
@@ -68,88 +204,103 @@ public class Lexer {
         return code;
     }
 
-    public static void scan(String path) {
-
-        EOP = "\\$";
-        OPEN_BLOCK = "\\{";
-        CLOSE_BLOCK = "\\}";
-        I_TYPE = "int | String | boolean";
-        ASSIGN_OP = "=";
-        OPEN_PARENTHESIS = "\\(";
-        CLOSE_PARENTHESIS = "\\)";
-        OPEN_QUOTES = "\"";
-        CLOSE_QUOTES = "\"";
-
-        KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
-        ID = "[a-z][a-z0-9]*";
-        DIGIT = "0|([1-9][0-9]*)";
-        SYMBOLS = "\\$|\\(|\\)|\\{|\\}|\\=|\\!|\\+|\\/|\\*|\\\"|\\.";
-        WHITE_SPACE = "[\\n\\t\\s\\r ]+";
-
-        // start wth keywords and create empty string and append the char
-        System.out.println(CLOSE_BLOCK);
-        String code = readChars(path);
-
-        Pattern patternKeyword = Pattern.compile("\\b" + KEYWORDS + "\\b", Pattern.CASE_INSENSITIVE);
+    // This method identifies if a char is an ID
+    public static boolean isID (char idCandidate) {
+        String ID = "[a-z][a-z0-9]*";
         Pattern patternID = Pattern.compile(ID, Pattern.CASE_INSENSITIVE);
-        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
-        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
-        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
-
-        // stream the characters in the string
-        for (int i = 0; i < code.length(); i++) {
-            char currentCharacter = code.charAt(i);
-            //System.out.println(ch);
-
-
-            Matcher matchID = patternID.matcher(String.valueOf(currentCharacter));
-            // code for recognizing id using RegEx
-            if (matchID.matches()) {
-                Tokens id = new Tokens("ID", matchID.group(), LINE_NUMBER, POSITION_NUMBER);
-                Lexer.log(PROGRAM_NUMBER, true, "Lexer", id.lexemeName, id.symbol,
-                        id.lineNum, id.positionNum);
-                KEYWORD_CANDIDATE = "";
-            } else {
-                Matcher matchDigits = patternDigit.matcher(String.valueOf(currentCharacter));
-                // code for recognizing digit using RegEx
-                if (matchDigits.matches()) {
-                    Tokens symbols = new Tokens("DIGIT", matchDigits.group(), LINE_NUMBER, POSITION_NUMBER);
-                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", symbols.lexemeName, symbols.symbol,
-                            symbols.lineNum, symbols.positionNum);
-                } else {
-                    Matcher matchSymbol = patternSymbols.matcher(String.valueOf(currentCharacter));
-                    if (matchSymbol.matches()) {
-                        Tokens symbols = new Tokens("SYMBOLS", matchSymbol.group(), LINE_NUMBER, POSITION_NUMBER);
-                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", symbols.lexemeName, symbols.symbol,
-                                symbols.lineNum, symbols.positionNum);
-                    } else {
-                        Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(currentCharacter));
-                        // code for recognizing whitespace using RegEx
-                        if (matchWhiteSpace.matches()) {
-                            Tokens whiteSpace = new Tokens("WHITE_SPACE", "\' \'", LINE_NUMBER, POSITION_NUMBER);
-                            Lexer.log(PROGRAM_NUMBER, false, "Lexer", whiteSpace.lexemeName, whiteSpace.symbol,
-                                    whiteSpace.lineNum, whiteSpace.positionNum);
-                        } else {
-                            System.out.println("There is an error");
-                        }
-                    }
-                }
-
-                POSITION_NUMBER++;
-                if ('\n' == code.charAt(i)) {
-                    LINE_NUMBER++;
-                    POSITION_NUMBER = 0;
-                }
-            }
-
-
+        Matcher matchID = patternID.matcher(String.valueOf(idCandidate));
+        // code for recognizing id using RegEx
+        if (matchID.matches()) {
+            return true;
         }
+        return false;
     }
+
+    // This method identifies if a char is an SYMBOL
+    public static boolean isSYMBOL (char symbolCandidate) {
+        String SYMBOLS = "[$(){}=!+/*\".]";
+        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
+        Matcher matchSymbol = patternSymbols.matcher(String.valueOf(symbolCandidate));
+        if (matchSymbol.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    // This method identifies if a char is an DIGIT
+    public static boolean isDIGIT (char digitCandidate) {
+        String DIGIT = "0|([1-9][0-9]*)";
+        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
+        Matcher matchDigits = patternDigit.matcher(String.valueOf(digitCandidate));
+        // code for recognizing digit using RegEx
+        if (matchDigits.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    // This method identifies if a char is an DIGIT
+    public static boolean isWHITESPACE (char whitespaceCandidate) {
+        String WHITE_SPACE = "[\\n\\t\\s\\r ]+";
+        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
+        Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(whitespaceCandidate));
+        // code for recognizing whitespace using RegEx
+        if (matchWhiteSpace.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    // get the symbol token name from here
+    public static String getTokenName(String c) {
+        String tokenName;
+        switch (c) {
+            case "$":
+                tokenName = "EOP";
+                break;
+            case "(":
+                tokenName = "LEFT_PARENTHESIS";
+                break;
+            case ")":
+                tokenName = "RIGHT_PARENTHESIS";
+                break;
+            case "{":
+                tokenName = "LEFT_BRACE";
+                break;
+            case "}":
+                tokenName = "RIGHT_BRACE";
+                break;
+            case "=":
+                tokenName = "ASSIGNMENT_OP";
+                break;
+            case "==":
+                tokenName = "EQUAL_TO_OP";
+                break;
+            case "!=":
+                tokenName = "NOT_EQUAL_TO";
+                break;
+            case "+":
+                tokenName = "PLUS";
+                break;
+            case "/":
+                tokenName = "SLASH";
+                break;
+            case "*":
+                tokenName = "ASTERISK";
+                break;
+            case "\"":
+                tokenName = "QUOTE";
+                break;
+            default:
+                tokenName = "string";
+        }
+        return tokenName;
+    }
+
     /** Concrete implementation for the log method    */
     public static void log(int progNum, Boolean debug, String compilerStage, String tokenName, String tokenSymbol,
                     int tokenLineNum, int tokenPosNum) {
         if (debug) {
-            //if (progNum == 1) System.out.println("INFO Lexer - Lexing program " + progNum + " ... ");
             System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
                                 + tokenLineNum + ":" + tokenPosNum + ")");
         }
