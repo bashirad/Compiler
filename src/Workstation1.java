@@ -8,26 +8,11 @@ import java.util.regex.Pattern;
 // TODO 2. make use of RegEx
 public class Workstation1 {
 
-    private static String OPEN_BLOCK;
-    private static String CLOSE_BLOCK;
-    private static String ID;
-    private static String I_TYPE;
-    private static String EOP;
-    private static String ASSIGN_OP;
-    private static String OPEN_PARENTHESIS;
-    private static String CLOSE_PARENTHESIS;
-    private static String OPEN_QUOTES;
-    private static String CLOSE_QUOTES;
-    private static String KEYWORDS;
-    private static String DIGIT;
-    private static String WHITE_SPACE;
-    private static String SYMBOLS;
     private static int LINE_NUMBER = 1;
     private static int POSITION_NUMBER = 0;
-    private static int PROGRAM_NUMBER = 1;
-    private static int lastPosition = -1;
-    private static int currentPosition = 0;
-    private static String KEYWORD_CANDIDATE = " ";
+    private static Tokens currentTokenID;
+    private static Tokens currentTokenKeyword;
+
 
     public static void main(String[] args ) {
         init();
@@ -39,81 +24,168 @@ public class Workstation1 {
 
     public static void scan() {
 
-        EOP = "\\$";
-        OPEN_BLOCK = "\\{";
-        CLOSE_BLOCK = "\\}";
-        I_TYPE = "int | String | boolean";
-        ASSIGN_OP = "=";
-        OPEN_PARENTHESIS = "\\(";
-        CLOSE_PARENTHESIS = "\\)";
-        OPEN_QUOTES = "\"";
-        CLOSE_QUOTES = "\"";
-
-        KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
-        ID = "[a-z][a-z0-9]*";
-        DIGIT = "0|([1-9][0-9]*)";
-        SYMBOLS = "\\$|\\(|\\)|\\{|\\}|\\=|\\!|\\+|\\/|\\*|\\\"|\\.";
-        WHITE_SPACE = "[\\n\\t\\s\\r ]+";
+        int curPos;
+        int beginPos = 0;
+        int endPos = 0;
+        int keywordNum = 0;
 
         // start wth keywords and create empty string and append the char
-        System.out.println(CLOSE_BLOCK);
         String code = readChars();
 
-        Pattern patternKeyword = Pattern.compile("\\b" + KEYWORDS + "\\b", Pattern.CASE_INSENSITIVE);
-        Pattern patternID = Pattern.compile(ID, Pattern.CASE_INSENSITIVE);
-        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
-        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
-        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
+        String TOKEN_CANDIDATE = "";
+        StringBuilder strBuilder = new StringBuilder(TOKEN_CANDIDATE);
 
         // stream the characters in the string
-        for (int i = 0; i < code.length(); i++) {
-            char currentCharacter = code.charAt(i);
+        for (int currentPosition = 0; currentPosition < code.length(); currentPosition++) {
+            char currentCharacter = code.charAt(currentPosition);
             //System.out.println(ch);
 
 
-            Matcher matchID = patternID.matcher(String.valueOf(currentCharacter));
-            // code for recognizing id using RegEx
-            if (matchID.matches()) {
-                Tokens id = new Tokens("ID", matchID.group(), LINE_NUMBER, POSITION_NUMBER);
-                Lexer.log(PROGRAM_NUMBER, true, "Lexer", id.lexemeName, id.symbol,
-                        id.lineNum, id.positionNum);
-                KEYWORD_CANDIDATE = "";
-            } else {
-                Matcher matchDigits = patternDigit.matcher(String.valueOf(currentCharacter));
-                // code for recognizing digit using RegEx
-                if (matchDigits.matches()) {
-                    Tokens symbols = new Tokens("DIGIT", matchDigits.group(), LINE_NUMBER, POSITION_NUMBER);
-                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", symbols.lexemeName, symbols.symbol,
-                            symbols.lineNum, symbols.positionNum);
-                } else {
-                    Matcher matchSymbol = patternSymbols.matcher(String.valueOf(currentCharacter));
-                    if (matchSymbol.matches()) {
-                        Tokens symbols = new Tokens("SYMBOLS", matchSymbol.group(), LINE_NUMBER, POSITION_NUMBER);
-                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", symbols.lexemeName, symbols.symbol,
-                                symbols.lineNum, symbols.positionNum);
-                    } else {
-                        Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(currentCharacter));
-                        // code for recognizing whitespace using RegEx
-                        if (matchWhiteSpace.matches()) {
-                            Tokens whiteSpace = new Tokens("WHITE_SPACE", "\' \'", LINE_NUMBER, POSITION_NUMBER);
-                            Lexer.log(PROGRAM_NUMBER, false, "Lexer", whiteSpace.lexemeName, whiteSpace.symbol,
-                                    whiteSpace.lineNum, whiteSpace.positionNum);
-                        } else {
-                            System.out.println("There is an error");
+            int PROGRAM_NUMBER = 1;
+
+            if (isID(currentCharacter)) {
+                String tokenSymbol = "";
+                tokenSymbol += currentCharacter;
+                currentTokenID = new Tokens("ID", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+
+                curPos = code.indexOf(currentCharacter);
+
+                //TODO Look ahead happens here;
+                for(int i = code.indexOf(currentCharacter); i < code.length(); i++) {
+                    char curChar = code.charAt(i);
+                    if (!isWHITESPACE(curChar) && !isSYMBOL(curChar) && !isDIGIT(curChar)){
+
+                        strBuilder.append(curChar);
+                        beginPos = code.indexOf(currentCharacter);
+                        endPos = 0;
+
+                        // code for recognizing keywords using RegEx
+                        String KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
+                        Pattern patternKeyword = Pattern.compile("\\b" + KEYWORDS + "\\b", Pattern.CASE_INSENSITIVE);
+                        Matcher matchKeyword = patternKeyword.matcher(String.valueOf(strBuilder));
+
+                        if (matchKeyword.matches()) {
+                            currentTokenKeyword = new Tokens("KEYWORD", matchKeyword.group(), LINE_NUMBER, POSITION_NUMBER);
+                            endPos = i;
+                            keywordNum++;
+                            curPos = code.indexOf(curChar);
                         }
+                    } else {
+                        strBuilder.delete(0, strBuilder.length());
+                        break;
+                    }
+
+
+                }
+                if (keywordNum != 0) {
+                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenKeyword.lexemeName,
+                            currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
+                }
+                else {
+                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenID.lexemeName,
+                            currentTokenID.symbol, LINE_NUMBER, POSITION_NUMBER);
+                    curPos++;
+                }
+                currentPosition = curPos;
+            } else {
+                if (isSYMBOL(currentCharacter)) {
+
+                    if (strBuilder.isEmpty()) {
+                        String tokenSymbol = "";
+                        tokenSymbol += currentCharacter;
+
+                        Tokens currentToken = new Tokens("SYMBOLS", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                        // TODO might not need to log here
+                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                currentToken.lineNum, currentToken.positionNum);
+                    }
+                } else {
+                    if (isDIGIT(currentCharacter)) {
+                        if (strBuilder.isEmpty()) {
+                            String tokenSymbol = "";
+                            tokenSymbol += currentCharacter;
+
+                            Tokens currentToken = new Tokens("DIGIT", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            // TODO might not need to log here
+                            Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                    currentToken.lineNum, currentToken.positionNum);
+                        }
+                    } else {
+                        if (isWHITESPACE(currentCharacter)) {
+                        String tokenSymbol = "";
+                        tokenSymbol += currentCharacter;
+
+                        Tokens currentToken = new Tokens("WHITE_SPACE", "' '", LINE_NUMBER, POSITION_NUMBER);
+                        Lexer.log(PROGRAM_NUMBER, false, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                currentToken.lineNum, currentToken.positionNum);
+                    } else {
+                        System.out.println("There is an error");
                     }
                 }
 
+                // this logs the ID or Keyword that were last found
+                /*Lexer.log(PROGRAM_NUMBER, false, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                        currentToken.lineNum, currentToken.positionNum);*/
+
                 POSITION_NUMBER++;
-                if ('\n' == code.charAt(i)) {
+                if ('\n' == code.charAt(currentPosition)) {
                     LINE_NUMBER++;
                     POSITION_NUMBER = 0;
                 }
+
             }
-
-
         }
     }
+
+}
+
+    // This method identifies if a char is an ID
+    public static boolean isID (char idCandidate) {
+        String ID = "[a-z][a-z0-9]*";
+        Pattern patternID = Pattern.compile(ID, Pattern.CASE_INSENSITIVE);
+        Matcher matchID = patternID.matcher(String.valueOf(idCandidate));
+        // code for recognizing id using RegEx
+        if (matchID.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    // This method identifies if a char is an SYMBOL
+    public static boolean isSYMBOL (char symbolCandidate) {
+        String SYMBOLS = "[$(){}=!+/*\".]";
+        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
+        Matcher matchSymbol = patternSymbols.matcher(String.valueOf(symbolCandidate));
+        if (matchSymbol.matches()) {
+                return true;
+            }
+        return false;
+    }
+
+    // This method identifies if a char is an DIGIT
+    public static boolean isDIGIT (char digitCandidate) {
+        String DIGIT = "0|([1-9][0-9]*)";
+        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
+        Matcher matchDigits = patternDigit.matcher(String.valueOf(digitCandidate));
+        // code for recognizing digit using RegEx
+        if (matchDigits.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    // This method identifies if a char is an DIGIT
+    public static boolean isWHITESPACE (char whitespaceCandidate) {
+        String WHITE_SPACE = "[\\n\\t\\s\\r ]+";
+        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
+        Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(whitespaceCandidate));
+        // code for recognizing whitespace using RegEx
+        if (matchWhiteSpace.matches()) {
+            return true;
+        }
+        return false;
+    }
+    // This method reads the string file char by char
     public static String readChars () {
 
         int lastPosition = 0;
