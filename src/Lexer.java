@@ -36,7 +36,7 @@ public class Lexer {
         // start wth keywords and create empty string and append the char
         String code = readChars(path);
 
-        int curPos;
+        int curPos = 0;
         int beginPos = 0;
         int endPos = 0;
         int keywordNum = 0;
@@ -60,8 +60,6 @@ public class Lexer {
                     if (!isWHITESPACE(curChar) && !isSYMBOL(curChar) && !isDIGIT(curChar)){
 
                         strBuilder.append(curChar);
-                        beginPos = code.indexOf(currentCharacter);
-                        endPos = 0;
 
                         // code for recognizing keywords using RegEx
                         String KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
@@ -70,7 +68,6 @@ public class Lexer {
 
                         if (matchKeyword.matches()) {
                             currentTokenKeyword = new Tokens("KEYWORD", matchKeyword.group(), LINE_NUMBER, POSITION_NUMBER);
-                            endPos = i;
                             keywordNum++;
                             curPos = j;
                         }
@@ -117,7 +114,7 @@ public class Lexer {
 
                                 if (curChar == '"') {
                                     str += String.valueOf(strBuilder);
-                                    i = s;
+                                    i = s-2;
                                     POSITION_NUMBER = POSITION_NUMBER + str.length();
                                     break;
                                 } else {
@@ -126,15 +123,47 @@ public class Lexer {
                             }
                             str += '"';
                             tokenSymbol = str;
-                        }
+                        } else if (Objects.equals(getTokenName(tokenSymbol), "SLASH")) {
+                            String comment = "";
+                            strBuilder.append(currentCharacter);
+                            for (int s = i+1; s < code.length(); s++) {
+                                char curChar = code.charAt(s);
 
-                        POSITION_NUMBER++;
-                        Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
-                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
-                                currentToken.lineNum, currentToken.positionNum);
-                        if (Objects.equals(getTokenName(tokenSymbol), "EOP")) {
-                            PROGRAM_NUMBER++;
-                            System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
+                                if (curChar == '*') {
+                                    if (code.charAt(s+1) == '/') {
+
+                                        strBuilder.append('*');
+                                        strBuilder.append('/');
+
+                                        comment = String.valueOf(strBuilder);
+                                        strBuilder.delete(0, strBuilder.length());
+                                        POSITION_NUMBER = POSITION_NUMBER + 2;
+                                        i = s + 1;
+                                        Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
+                                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                                currentToken.lineNum, currentToken.positionNum);
+                                        break;
+                                    }
+                                }
+                                strBuilder.append(curChar);
+                                POSITION_NUMBER++;
+                            }
+                        } else if (Objects.equals(getTokenName(tokenSymbol), "EOP") ){
+
+                            if( i == code.length() - 1 ) {
+                                // do nothing
+                                // Now this is the last $ sign
+                                break;
+                            } else {
+                                PROGRAM_NUMBER++;
+                                System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
+                            }
+                        }
+                        else {
+                            POSITION_NUMBER++;
+                            Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                    currentToken.lineNum, currentToken.positionNum);
                         }
                     }
                 } else {
