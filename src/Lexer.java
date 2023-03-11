@@ -30,9 +30,6 @@ public class Lexer {
      */
     public static void scan(String path) {
 
-        int errorCount = 0;
-        int warningCount = 0;
-
         String TOKEN_CANDIDATE = "";
         strBuilder = new StringBuilder(TOKEN_CANDIDATE);
 
@@ -80,9 +77,9 @@ public class Lexer {
                 }
 
                 if (keywordNum != 0) {
+                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
                     Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenKeyword.lexemeName,
                             currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
-                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
                     keywordNum = 0;
                 } else {
                     POSITION_NUMBER++;
@@ -103,6 +100,12 @@ public class Lexer {
                             if (code.charAt(i+1) == '=') {
                                 tokenSymbol += '=';
                                 i++;
+                            } else {
+                                POSITION_NUMBER++;
+                                Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                        currentToken.lineNum, currentToken.positionNum);
+
                             }
                         } else if (Objects.equals(getTokenName(tokenSymbol), "NOT_EQUAL_TO")) {
                             if (code.charAt(i+1) == '=') {
@@ -142,9 +145,9 @@ public class Lexer {
                                         strBuilder.delete(0, strBuilder.length());
                                         POSITION_NUMBER = POSITION_NUMBER + 2;
                                         i = s + 1;
-                                        /*Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
+                                        Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
                                         Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
-                                                currentToken.lineNum, currentToken.positionNum);*/
+                                                currentToken.lineNum, currentToken.positionNum);
                                         break;
                                     }
                                 }
@@ -155,16 +158,10 @@ public class Lexer {
 
                             if( i == code.length() - 1 ) {
                                 // do nothing
-                                // Note this is the last $ sign
+                                // Now this is the last $ sign
                                 break;
                             } else {
                                 PROGRAM_NUMBER++;
-                                Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
-                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
-                                        currentToken.lineNum, currentToken.positionNum);
-
-                                System.out.println("INFO Lexer - Lexing completed with " + errorCount +  " error(s) and " + warningCount +  " warning(s).");
-
                                 System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
                             }
                         }
@@ -189,8 +186,7 @@ public class Lexer {
                         if (isWHITESPACE(currentCharacter)) {
                             // ignore and do nothing because it is a white space
                         } else {
-                            errorCount++;
-                            System.out.println("ERROR Lexer - Unrecognized Token  found at ("
+                            System.out.println("ERROR Lexer - Unrecognized Token " + currentCharacter + "  found at ("
                                     + LINE_NUMBER + ":" + POSITION_NUMBER + ")");
                         }
                     }
@@ -198,7 +194,7 @@ public class Lexer {
                     POSITION_NUMBER++;
                     if ('\n' == code.charAt(i)) {
                         LINE_NUMBER++;
-                        POSITION_NUMBER = 1;
+                        POSITION_NUMBER = 0;
                     }
 
                 }
@@ -245,8 +241,8 @@ public class Lexer {
 
     // This method identifies if a char is an ID
     public static boolean isID (char idCandidate) {
-        String ID = "[a-z][a-z0-9]*";
-        Pattern patternID = Pattern.compile(ID, Pattern.CASE_INSENSITIVE);
+        String ID = "[a-z]";
+        Pattern patternID = Pattern.compile(ID);
         Matcher matchID = patternID.matcher(String.valueOf(idCandidate));
         // code for recognizing id using RegEx
         if (matchID.matches()) {
@@ -258,7 +254,7 @@ public class Lexer {
     // This method identifies if a char is an SYMBOL
     public static boolean isSYMBOL (char symbolCandidate) {
         String SYMBOLS = "[$(){}=!+/*\".]";
-        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
+        Pattern patternSymbols = Pattern.compile(SYMBOLS);
         Matcher matchSymbol = patternSymbols.matcher(String.valueOf(symbolCandidate));
         if (matchSymbol.matches()) {
             return true;
@@ -269,7 +265,7 @@ public class Lexer {
     // This method identifies if a char is an DIGIT
     public static boolean isDIGIT (char digitCandidate) {
         String DIGIT = "0|([1-9][0-9]*)";
-        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
+        Pattern patternDigit = Pattern.compile(DIGIT);
         Matcher matchDigits = patternDigit.matcher(String.valueOf(digitCandidate));
         // code for recognizing digit using RegEx
         if (matchDigits.matches()) {
@@ -281,7 +277,7 @@ public class Lexer {
     // This method identifies if a char is an DIGIT
     public static boolean isWHITESPACE (char whitespaceCandidate) {
         String WHITE_SPACE = "[\\n\\t\\s\\r ]+";
-        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
+        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE);
         Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(whitespaceCandidate));
         // code for recognizing whitespace using RegEx
         if (matchWhiteSpace.matches()) {
@@ -340,7 +336,7 @@ public class Lexer {
     public static void log(int progNum, Boolean debug, String compilerStage, String tokenName, String tokenSymbol,
                     int tokenLineNum, int tokenPosNum) {
         if (debug) {
-            System.out.println("INFO " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
+            System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
                                 + tokenLineNum + ":" + tokenPosNum + ")");
         }
     }

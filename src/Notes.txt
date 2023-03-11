@@ -52,4 +52,5 @@ TEST CODE IS HERE:
  a = a
  string b
  a = b
+ print (5)
 }$

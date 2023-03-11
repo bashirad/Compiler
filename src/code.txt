@@ -1,1 +1,11 @@
-print=whileif"teststring"
+{}$
+{{{{{{}}}}}}$
+{{{{{{}}} /* comments are ignored */ }}}}$
+{ /* comments are print still ignored */ int @}$
+{
+ int a
+ a = a
+ string b
+ a = b
+ print (5)
+}$
