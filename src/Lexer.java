@@ -100,6 +100,12 @@ public class Lexer {
                             if (code.charAt(i+1) == '=') {
                                 tokenSymbol += '=';
                                 i++;
+                            } else {
+                                POSITION_NUMBER++;
+                                Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                        currentToken.lineNum, currentToken.positionNum);
+
                             }
                         } else if (Objects.equals(getTokenName(tokenSymbol), "NOT_EQUAL_TO")) {
                             if (code.charAt(i+1) == '=') {
@@ -180,7 +186,7 @@ public class Lexer {
                         if (isWHITESPACE(currentCharacter)) {
                             // ignore and do nothing because it is a white space
                         } else {
-                            System.out.println("ERROR Lexer - Unrecognized Token  found at ("
+                            System.out.println("ERROR Lexer - Unrecognized Token " + currentCharacter + "  found at ("
                                     + LINE_NUMBER + ":" + POSITION_NUMBER + ")");
                         }
                     }
@@ -235,8 +241,8 @@ public class Lexer {
 
     // This method identifies if a char is an ID
     public static boolean isID (char idCandidate) {
-        String ID = "[a-z][a-z0-9]*";
-        Pattern patternID = Pattern.compile(ID, Pattern.CASE_INSENSITIVE);
+        String ID = "[a-z]";
+        Pattern patternID = Pattern.compile(ID);
         Matcher matchID = patternID.matcher(String.valueOf(idCandidate));
         // code for recognizing id using RegEx
         if (matchID.matches()) {
@@ -248,7 +254,7 @@ public class Lexer {
     // This method identifies if a char is an SYMBOL
     public static boolean isSYMBOL (char symbolCandidate) {
         String SYMBOLS = "[$(){}=!+/*\".]";
-        Pattern patternSymbols = Pattern.compile(SYMBOLS, Pattern.CASE_INSENSITIVE);
+        Pattern patternSymbols = Pattern.compile(SYMBOLS);
         Matcher matchSymbol = patternSymbols.matcher(String.valueOf(symbolCandidate));
         if (matchSymbol.matches()) {
             return true;
@@ -259,7 +265,7 @@ public class Lexer {
     // This method identifies if a char is an DIGIT
     public static boolean isDIGIT (char digitCandidate) {
         String DIGIT = "0|([1-9][0-9]*)";
-        Pattern patternDigit = Pattern.compile(DIGIT, Pattern.CASE_INSENSITIVE);
+        Pattern patternDigit = Pattern.compile(DIGIT);
         Matcher matchDigits = patternDigit.matcher(String.valueOf(digitCandidate));
         // code for recognizing digit using RegEx
         if (matchDigits.matches()) {
@@ -271,7 +277,7 @@ public class Lexer {
     // This method identifies if a char is an DIGIT
     public static boolean isWHITESPACE (char whitespaceCandidate) {
         String WHITE_SPACE = "[\\n\\t\\s\\r ]+";
-        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE, Pattern.CASE_INSENSITIVE);
+        Pattern patternWhiteSpace = Pattern.compile(WHITE_SPACE);
         Matcher matchWhiteSpace = patternWhiteSpace.matcher(String.valueOf(whitespaceCandidate));
         // code for recognizing whitespace using RegEx
         if (matchWhiteSpace.matches()) {
