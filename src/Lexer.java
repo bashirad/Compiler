@@ -30,6 +30,9 @@ public class Lexer {
      */
     public static void scan(String path) {
 
+        int errorCount = 0;
+        int warningCount = 0;
+
         String TOKEN_CANDIDATE = "";
         strBuilder = new StringBuilder(TOKEN_CANDIDATE);
 
@@ -77,9 +80,9 @@ public class Lexer {
                 }
 
                 if (keywordNum != 0) {
-                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
                     Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenKeyword.lexemeName,
                             currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
+                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
                     keywordNum = 0;
                 } else {
                     POSITION_NUMBER++;
@@ -139,9 +142,9 @@ public class Lexer {
                                         strBuilder.delete(0, strBuilder.length());
                                         POSITION_NUMBER = POSITION_NUMBER + 2;
                                         i = s + 1;
-                                        Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
+                                        /*Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
                                         Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
-                                                currentToken.lineNum, currentToken.positionNum);
+                                                currentToken.lineNum, currentToken.positionNum);*/
                                         break;
                                     }
                                 }
@@ -152,10 +155,16 @@ public class Lexer {
 
                             if( i == code.length() - 1 ) {
                                 // do nothing
-                                // Now this is the last $ sign
+                                // Note this is the last $ sign
                                 break;
                             } else {
                                 PROGRAM_NUMBER++;
+                                Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                        currentToken.lineNum, currentToken.positionNum);
+
+                                System.out.println("INFO Lexer - Lexing completed with " + errorCount +  " error(s) and " + warningCount +  " warning(s).");
+
                                 System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
                             }
                         }
@@ -180,6 +189,7 @@ public class Lexer {
                         if (isWHITESPACE(currentCharacter)) {
                             // ignore and do nothing because it is a white space
                         } else {
+                            errorCount++;
                             System.out.println("ERROR Lexer - Unrecognized Token  found at ("
                                     + LINE_NUMBER + ":" + POSITION_NUMBER + ")");
                         }
@@ -188,7 +198,7 @@ public class Lexer {
                     POSITION_NUMBER++;
                     if ('\n' == code.charAt(i)) {
                         LINE_NUMBER++;
-                        POSITION_NUMBER = 0;
+                        POSITION_NUMBER = 1;
                     }
 
                 }
@@ -330,7 +340,7 @@ public class Lexer {
     public static void log(int progNum, Boolean debug, String compilerStage, String tokenName, String tokenSymbol,
                     int tokenLineNum, int tokenPosNum) {
         if (debug) {
-            System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
+            System.out.println("INFO " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
                                 + tokenLineNum + ":" + tokenPosNum + ")");
         }
     }
