@@ -1,11 +1,4 @@
-{}$
-{{{{{{}}}}}}$
-{{{{{{}}} /* comments are ignored */ }}}}$
-{ /* comments are print still ignored */ int @}$
-{
- int a
- a = a
- string b
- a = b
- print (5)
-}$
+print=whileif"teststring"
+intstringbooleanfalse
+true
+==!=+ a(){}$/*COMMENT*/m

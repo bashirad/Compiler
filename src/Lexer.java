@@ -30,6 +30,7 @@ public class Lexer {
      */
     public static void scan(String path) {
 
+        POSITION_NUMBER = 1;
         String TOKEN_CANDIDATE = "";
         strBuilder = new StringBuilder(TOKEN_CANDIDATE);
 
@@ -62,7 +63,7 @@ public class Lexer {
                         strBuilder.append(curChar);
 
                         // code for recognizing keywords using RegEx
-                        String KEYWORDS = "\\b(print|while|true|false|int|string|boolean)\\b";
+                        String KEYWORDS = "\\b(print|while|true|false|int|string|boolean|if)\\b";
                         Pattern patternKeyword = Pattern.compile("\\b" + KEYWORDS + "\\b", Pattern.CASE_INSENSITIVE);
                         Matcher matchKeyword = patternKeyword.matcher(String.valueOf(strBuilder));
 
@@ -76,13 +77,15 @@ public class Lexer {
                     }
                 }
 
-                if (keywordNum != 0) {
-                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.lexemeName.length();
-                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenKeyword.lexemeName,
+                if (keywordNum == 1) {
+
+                    Lexer.log(PROGRAM_NUMBER, true, "Lexer", getKeywordType(currentTokenKeyword.symbol),
                             currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
+
+                    POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.symbol.length();
+
                     keywordNum = 0;
                 } else {
-                    POSITION_NUMBER++;
                     Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenID.lexemeName,
                             currentTokenID.symbol, LINE_NUMBER, POSITION_NUMBER);
                 }
@@ -92,44 +95,69 @@ public class Lexer {
             } else {
                 if (isSYMBOL(currentCharacter)) {
 
-                    // TODO if quote then read ahead until another quote appears, then consider the entire thing to be a string
                     if (strBuilder.isEmpty()) {
                         String tokenSymbol = "";
                         tokenSymbol += currentCharacter;
-                        if (Objects.equals((getTokenName(tokenSymbol)), "ASSIGNMENT_OP")) {
+                        if (Objects.equals((getSymbolName(tokenSymbol)), "ASSIGN")) {
                             if (code.charAt(i+1) == '=') {
                                 tokenSymbol += '=';
                                 i++;
+                                Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                        currentToken.lineNum, currentToken.positionNum);
                             } else {
                                 POSITION_NUMBER++;
-                                Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                                 Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                         currentToken.lineNum, currentToken.positionNum);
 
                             }
-                        } else if (Objects.equals(getTokenName(tokenSymbol), "NOT_EQUAL_TO")) {
+                        } else if (Objects.equals((getSymbolName(tokenSymbol)), "EXCLAMATION_MARK")) {
                             if (code.charAt(i+1) == '=') {
                                 tokenSymbol += '=';
                                 i++;
+                                Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                                Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                        currentToken.lineNum, currentToken.positionNum);
+
                             }
-                        } else if (Objects.equals(getTokenName(tokenSymbol), "QUOTE")) {
+                        } else if (Objects.equals(getSymbolName(tokenSymbol), "QUOTE")) {
                             String str = "";
-                            str += '\u0022';
-                            for (int s = i+1; s < code.length(); s++) {
+                              for (int s = i+1; s < code.length(); s++) {
                                 char curChar = code.charAt(s);
 
                                 if (curChar == '"') {
+                                    str += '\u0022';
+                                    strBuilder.append(curChar);
                                     str += String.valueOf(strBuilder);
-                                    i = s-2;
+                                    i = s;
                                     POSITION_NUMBER = POSITION_NUMBER + str.length();
+
                                     break;
                                 } else {
                                     strBuilder.append(curChar);
+                                    if (code.indexOf(curChar) == code.length()-1) {
+                                        System.out.println("DEBUG Lexer - WARNING: Cannot find the second/closing quotation mark!");
+                                        str += '\u0022';
+                                        str += String.valueOf(strBuilder);
+                                        i = s;
+                                    }
                                 }
                             }
-                            str += '"';
+                            if (str == "") {
+                                System.out.println("DEBUG Lexer - WARNING: Cannot find the second/closing quotation mark!");
+                                str += '\u0022';
+                            }
+
                             tokenSymbol = str;
-                        } else if (Objects.equals(getTokenName(tokenSymbol), "SLASH")) {
+                            Tokens currentToken = new Tokens("string", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName.toUpperCase(), currentToken.symbol,
+                                    currentToken.lineNum, currentToken.positionNum);
+
+                            strBuilder.delete(0,strBuilder.length());
+
+
+                        } else if (Objects.equals(getSymbolName(tokenSymbol), "SLASH")) {
                             String comment = "";
                             strBuilder.append(currentCharacter);
                             for (int s = i+1; s < code.length(); s++) {
@@ -145,16 +173,14 @@ public class Lexer {
                                         strBuilder.delete(0, strBuilder.length());
                                         POSITION_NUMBER = POSITION_NUMBER + 2;
                                         i = s + 1;
-                                        Tokens currentToken = new Tokens("COMMENT", comment, LINE_NUMBER, POSITION_NUMBER);
-                                        Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
-                                                currentToken.lineNum, currentToken.positionNum);
+
                                         break;
                                     }
                                 }
                                 strBuilder.append(curChar);
                                 POSITION_NUMBER++;
                             }
-                        } else if (Objects.equals(getTokenName(tokenSymbol), "EOP") ){
+                        } else if (Objects.equals(getSymbolName(tokenSymbol), "EOP") ){
 
                             if( i == code.length() - 1 ) {
                                 // do nothing
@@ -166,10 +192,10 @@ public class Lexer {
                             }
                         }
                         else {
-                            POSITION_NUMBER++;
-                            Tokens currentToken = new Tokens(getTokenName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
+                            POSITION_NUMBER++;
                         }
                     }
                 } else {
@@ -287,7 +313,7 @@ public class Lexer {
     }
 
     // get the symbol token name from here
-    public static String getTokenName(String c) {
+    public static String getSymbolName(String c) {
         String tokenName;
         switch (c) {
             case "$":
@@ -306,7 +332,7 @@ public class Lexer {
                 tokenName = "RIGHT_BRACE";
                 break;
             case "=":
-                tokenName = "ASSIGNMENT_OP";
+                tokenName = "ASSIGN";
                 break;
             case "==":
                 tokenName = "EQUAL_TO_OP";
@@ -326,8 +352,12 @@ public class Lexer {
             case "\"":
                 tokenName = "QUOTE";
                 break;
+            case "!":
+                tokenName = "EXCLAMATION_MARK";
+                break;
+
             default:
-                tokenName = "string";
+                tokenName = "UNKNOWN";
         }
         return tokenName;
     }
@@ -339,6 +369,39 @@ public class Lexer {
             System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
                                 + tokenLineNum + ":" + tokenPosNum + ")");
         }
+    }
+
+    public static String getKeywordType(String c) {
+        String tokenName;
+        switch (c) {
+            case "int":
+                tokenName = "INT_I-TYPE";
+                break;
+            case "string":
+                tokenName = "STRING_I-TYPE";
+                break;
+            case "boolean":
+                tokenName = "BOOL_I-TYPE";
+                break;
+            case "false":
+                tokenName = "FALSE_BOOL_VAL";
+                break;
+            case "true":
+                tokenName = "TRUE_BOOL_VAL";
+                break;
+            case "while":
+                tokenName = "WHILE_STATEMENT";
+                break;
+            case "if":
+                tokenName = "IF";
+                break;
+            case "print":
+                tokenName = "PRINT";
+                break;
+            default:
+                tokenName = "KEYWORD";
+        }
+        return tokenName;
     }
 
 }
