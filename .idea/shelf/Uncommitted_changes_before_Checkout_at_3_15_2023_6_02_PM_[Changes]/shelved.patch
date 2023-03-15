@@ -1,0 +1,210 @@
+Index: src/Parser.java
+===================================================================
+diff --git a/src/Parser.java b/src/Parser.java
+--- a/src/Parser.java	
++++ b/src/Parser.java	
+@@ -2,10 +2,198 @@
+     public static void main(String[] args) {
+         init("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
+     }
+-    public static void init( String path) {
+-
++
++    public static void init(String path) {
+         System.out.println("\nINFO Parser - Parsing program " + 1 + " ... ");
+-        /** start parsing the source code */
++        // start parsing the source code
++    }
++
++    // Procedure to parse
++    // Program
++    public static void parseProgram() {
++        parseBlock();
++        match("EOP"); // end of program
++    }
++
++    // Procedure to parse Block
++    public static void parseBlock() {
++        match('{');
++        parseStatementList();
++        match('}');
++    }
++
++    // Procedure to parse StatementList
++    public static void parseStatementList() {
++        while (isStatement()) {
++            parseStatement();
++        }
++    }
++
++    public static void parseStatement() {
++        if (isPrintStatement()) {
++            parsePrintStatement();
++        } else if (isAssignmentStatement()) {
++            parseAssignmentStatement();
++        } else if (isVarDecl()) {
++            parseVarDecl();
++        } else if (isWhileStatement()) {
++            parseWhileStatement();
++        } else if (isIfStatement()) {
++            parseIfStatement();
++        } else if (isBlock()) {
++            parseBlock();
++        } else {
++            error();
++        }
++    }
++
++    public static void parsePrintStatement() {
++        match("print");
++        match('(');
++        parseExpr();
++        match(')');
++    }
++
++    public static void parseAssignmentStatement() {
++        parseId();
++        match('=');
++        parseExpr();
++    }
++
++    public static void parseVarDecl() {
++        parseType();
++        parseId();
++    }
++
++    public static void parseWhileStatement() {
++        match("while");
++        parseBooleanExpr();
++        parseBlock();
++    }
++
++    public static void parseIfStatement() {
++        match("if");
++        parseBooleanExpr();
++        parseBlock();
++    }
++
++    public static void parseExpr() {
++        if (isIntExpr()) {
++            parseIntExpr();
++        } else if (isStringExpr()) {
++            parseStringExpr();
++        } else if (isBooleanExpr()) {
++            parseBooleanExpr();
++        } else if (isId()) {
++            parseId();
++        } else {
++            error();
++        }
++    }
++
++    public static void parseIntExpr() {
++        match(DIGIT);
++        if (isIntOp()) {
++            parseIntOp();
++            parseExpr();
++        }
++    }
++
++    public static void parseStringExpr() {
++        match('"');
++        parseCharList();
++        match('"');
++    }
++
++    public static void parseBooleanExpr() {
++        if (isBoolVal()) {
++            parseBoolVal();
++        } else {
++            match('(');
++            parseExpr();
++            parseBoolOp();
++            parseExpr();
++            match(')');
++        }
++    }
++
++    public static void parseId() {
++        match(CHAR);
++    }
++
++    public static void parseCharList() {
++        if (isChar()) {
++            match(CHAR);
++            parseCharList();
++        } else if (isSpace()) {
++            match(SPACE);
++            parseCharList();
++        }
++    }
+ 
+-    }
+-}
++    public static void parseType() {
++        if (isInt()) {
++            match("int");
++        } else if (isString()) {
++            match("string");
++        } else if (isBoolean()) {
++            match("boolean");
++        } else {
++            error();
++        }
++    }
++
++    public static void parseBoolOp() {
++        if (isBoolOp()) {
++            match(BOOL_OP);
++        } else {
++            error();
++        }
++    }
++
++    public static void parseBoolVal() {
++        if (isBoolVal()) {
++            match(BOOL_VAL);
++        } else {
++            error();
++        }
++    }
++
++    public static void parseIntOp() {
++        if (isIntOp()) {
++            match(INT_OP);
++        } else {
++            error();
++        }
++    }
++
++    private static char lookahead;
++
++    public static void match(char c) {
++        if (lookahead == c) {
++            lookahead = getNextToken();
++        } else {
++            error();
++        }
++    }
++
++    public static void match(String s) {
++        for (char c : s.toCharArray()) {
++            match(c);
++        }
++    }
++
++    public static void error() {
++        throw new RuntimeException("Syntax error");
++    }
++
++    public static char getNextToken() {
++        // example string
++        String input = "this is an example for the string";
++        int pos = 0;
++        char c = input.charAt(pos);
++        pos++;
++        return c;
++    }
++
++}
+\ No newline at end of file
