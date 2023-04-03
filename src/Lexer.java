@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -13,16 +15,33 @@ public class Lexer {
     private static StringBuilder strBuilder;
     private static int PROGRAM_NUMBER = 1;
 
+    // Create a list of tokens
+    static List<Tokens> tokens = new ArrayList<>();
 
     public static void main(String[] args) {
-        init("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
+
+        /**
+         * Call init_Lexer and execute the Lexer in the Run environment
+         */
+        init_Lexer("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
     }
-    public static void init( String path) {
+    public static void init_Lexer( String path) {
 
         System.out.println("\nINFO Lexer - Lexing program " + 1 + " ... ");
-        /** start lexing the source code */
+
+        /**
+         * Start lexing the source code
+         */
         scan(path);
 
+    }
+
+    /**
+     * This method passes the stream of tokens to the Parser
+     */
+    public static List<Tokens> passTokens (String path) {
+        scan(path);
+        return tokens;
     }
 
     /**
@@ -52,7 +71,6 @@ public class Lexer {
                 String tokenSymbol = "";
                 tokenSymbol += currentCharacter;
                 currentTokenID = new Tokens("ID", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
-
                 curPos = i;
 
                 //TODO Correct the position and line numbers
@@ -68,7 +86,7 @@ public class Lexer {
                         Matcher matchKeyword = patternKeyword.matcher(String.valueOf(strBuilder));
 
                         if (matchKeyword.matches()) {
-                            currentTokenKeyword = new Tokens("KEYWORD", matchKeyword.group(), LINE_NUMBER, POSITION_NUMBER);
+                            currentTokenKeyword = new Tokens(matchKeyword.group().toUpperCase(), matchKeyword.group(), LINE_NUMBER, POSITION_NUMBER);
                             keywordNum++;
                             curPos = j;
                         }
@@ -81,6 +99,7 @@ public class Lexer {
 
                     Lexer.log(PROGRAM_NUMBER, true, "Lexer", getKeywordType(currentTokenKeyword.symbol),
                             currentTokenKeyword.symbol, LINE_NUMBER, POSITION_NUMBER);
+                    tokens.add(currentTokenKeyword);
 
                     POSITION_NUMBER = POSITION_NUMBER + currentTokenKeyword.symbol.length();
 
@@ -88,6 +107,7 @@ public class Lexer {
                 } else {
                     Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentTokenID.lexemeName,
                             currentTokenID.symbol, LINE_NUMBER, POSITION_NUMBER);
+                    tokens.add(currentTokenID);
                 }
                 strBuilder.delete(0, strBuilder.length());
                 i = curPos;
@@ -105,12 +125,15 @@ public class Lexer {
                                 Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                                 Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                         currentToken.lineNum, currentToken.positionNum);
+
+                                tokens.add(currentToken);
                             } else {
                                 POSITION_NUMBER++;
                                 Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                                 Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                         currentToken.lineNum, currentToken.positionNum);
 
+                                tokens.add(currentToken);
                             }
                         } else if (Objects.equals((getSymbolName(tokenSymbol)), "EXCLAMATION_MARK")) {
                             if (code.charAt(i+1) == '=') {
@@ -120,6 +143,7 @@ public class Lexer {
                                 Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                         currentToken.lineNum, currentToken.positionNum);
 
+                                tokens.add(currentToken);
                             }
                         } else if (Objects.equals(getSymbolName(tokenSymbol), "QUOTE")) {
                             String str = "";
@@ -153,6 +177,8 @@ public class Lexer {
                             Tokens currentToken = new Tokens("string", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName.toUpperCase(), currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
+
+                            tokens.add(currentToken);
 
                             strBuilder.delete(0,strBuilder.length());
 
@@ -195,6 +221,9 @@ public class Lexer {
                             Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
+
+                            tokens.add(currentToken);
+
                             POSITION_NUMBER++;
                         }
                     }
@@ -207,6 +236,8 @@ public class Lexer {
                             Tokens currentToken = new Tokens("DIGIT", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
+
+                            tokens.add(currentToken);
                         }
                     }  else {
                         if (isWHITESPACE(currentCharacter)) {
@@ -338,7 +369,7 @@ public class Lexer {
                 tokenName = "EQUAL_TO_OP";
                 break;
             case "!=":
-                tokenName = "NOT_EQUAL_TO";
+                tokenName = "NOT_EQUAL_TO_OP";
                 break;
             case "+":
                 tokenName = "PLUS";
@@ -390,7 +421,7 @@ public class Lexer {
                 tokenName = "TRUE_BOOL_VAL";
                 break;
             case "while":
-                tokenName = "WHILE_STATEMENT";
+                tokenName = "WHILE";
                 break;
             case "if":
                 tokenName = "IF";
