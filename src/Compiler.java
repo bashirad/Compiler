@@ -7,17 +7,17 @@ public class Compiler implements ICompiler {
             String filePath = args[0];
             // Do something with the file
 
-        /** Execute the Lexer                   */
-        Lexer.init(filePath);
+            /** Execute the Lexer                   */
+            Lexer.init_Lexer(filePath);
 
-        /** Execute the Parser                  */
-        Parser.init(filePath);
+            /** Execute the Parser                  */
+            Parser.init_Parser(filePath);
 
-        /** Execute the Semantics ...           */
+            /** Execute the Semantics ...           */
 
 
-        /** Execute the 6502 Code Generator     */
-    }
+            /** Execute the 6502 Code Generator     */
+        }
 
     }
 
