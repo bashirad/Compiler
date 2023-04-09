@@ -1,46 +1,54 @@
 import java.util.*;
 
 public class Parser {
-    static String TOKEN = "";
+    private static int PROGRAM_NUMBER = 0;
+    private static List<Tokens> tokens;
+    private static Tokens token;
     private static int token_pointer;
     private static String current_token;
+    private static int error_count = 0;
+    private static ArrayList<String> list_expected_strings = new ArrayList<>();
 
     public static void main(String[] args) {
 
         /**
          * Call init_Parser and execute the Parser in the Run environment
          */
-        init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
 
+        // TODO figure out a way to pass tokens to parser at the end of lexing each program
+        //init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
+        init_Parser();
     }
 
-    public static void init_Parser( String path) {
+    public static void init_Parser() {
 
         /**
-         * Call getStreamTokens here and then pass the stream of tokens
+         * Call the Lexer here
          */
-        List<Tokens> tokens = Lexer.passTokens(path);
+        //Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
 
-        System.out.println("\nINFO Parser - Parsing program " + 1 + " ... ");
+        System.out.println("\nINFO Parser - Parsing program " + PROGRAM_NUMBER + " ... ");
 
-        for (int i = token_pointer; i < tokens.size(); i++) {
-            Tokens token = tokens.get(i);
-            current_token = token.getLexemeName();
+        token_pointer = 0;
+        token = tokens.get(token_pointer);
+        current_token = token.getLexemeName();
 
-            /**
-             * Perform any other operations with currentToken here
-             */
+        System.out.println("Parser: init_Parser()");
 
-            // TODO write code to start parsing
-            // System.out.println(current_token);
-
-            /**
-             * start parsing the source code
-             */
-            parseProgram(current_token);
+        /**
+         * start parsing the source code
+         */
+        System.out.println("Parser: parseProgram()");
+        parseProgram();
 
 
-        }
+        /**
+         * if no errors, parsing is successful
+         */
+            if (error_count == 0) {
+                System.out.println("DEBUG Parser - Parsing of program " + PROGRAM_NUMBER + " completed with no errors");
+            }
+
 
     }
 
@@ -48,23 +56,30 @@ public class Parser {
      match method to check currentToken to the expectedToken
      */
     public static void match(String cur_tok, String expected_token) {
+
         if (Objects.equals(current_token, expected_token)) {
-            System.out.println("CORRECT: expected the " + expected_token + " and found the " + current_token);
+
+            //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
+
             token_pointer++;
+
             if (token_pointer < Lexer.tokens.size()) {
                 current_token = Lexer.tokens.get(token_pointer).getLexemeName();
             }
-        }
-        else {
-            System.out.println("WRONG: expected the " + expected_token + " but found the " + current_token);
+                // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
+
+        } else {
+            error_count++;
+            System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
         }
     }
 
     /**
      Procedure to parse Program
      */
-    public static void parseProgram(String current_token) {
-        parseBlock(current_token);
+    public static void parseProgram() {
+        System.out.println("Parser: parseBlock()");
+        parseBlock();
         /**
          * EOP is not part of the program unless it is separating two programs
          */
@@ -74,116 +89,154 @@ public class Parser {
     /**
      Procedure to parse Block
     */
-    public static void parseBlock(String current_token) {
+    public static void parseBlock() {
         match(current_token,"LEFT_BRACE");
-        parseStatementList(current_token);
+        parseStatementList();
         match(current_token, "RIGHT_BRACE");
     }
 
     /**
     Procedure to parse StatementList
     */
-    public static void parseStatementList(String current_token) {
+    public static void parseStatementList() {
 
-        Set<String> validTokens = new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "ID", "WHILE", "IF", "RIGHT_BRACE"));
+        Set<String> validTokens =
+                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
 
         if (validTokens.contains(current_token)) {
-            parseStatement(current_token);
+            System.out.println("Parser: parseStatement()");
+            parseStatement();
+            System.out.println("Parser: parseStatementList()");
+            parseStatementList();
         }
     }
-    public static void parseStatement(String current_token) {
+    public static void parseStatement() {
+        list_expected_strings.clear();
+        list_expected_strings.addAll(Arrays.asList("PRINT", "ASSIGN", "ID", "WHILE", "IF", "LEFT_BRACE"));
+
 
         if (Objects.equals(current_token, "PRINT")) {
-            parsePrintStatement(current_token);
+            System.out.println("Parser: parsePrintStatement()");
+            parsePrintStatement();
         } else if (Objects.equals(current_token, "ASSIGN")) {
-            parseAssignmentStatement(current_token);
-        } else if (Objects.equals(current_token, "ID")) {
-            parseVarDecl(current_token);
+            System.out.println("Parser: parseAssignmentStatement()");
+            parseAssignmentStatement();
+        } else if (Objects.equals(current_token, "INT")
+                || Objects.equals(current_token, "STRING")
+                || Objects.equals(current_token, "BOOLEAN")) {
+            System.out.println("Parser: parseVarDecl()");
+            parseVarDecl();
         } else if (Objects.equals(current_token, "WHILE")) {
-            parseWhileStatement(current_token);
+            System.out.println("Parser: parseWhileStatement()");
+            parseWhileStatement();
         } else if (Objects.equals(current_token, "IF")) {
-            parseIfStatement(current_token);
-        } else if (Objects.equals(current_token, "RIGHT_BRACE")) {
-            /**
-             * Parse the right brace to denote the end of the block
-             */
-            match(current_token, "RIGHT_BRACE");
-        } else {
-            error(current_token);
+            System.out.println("Parser: parseIfStatement()");
+            parseIfStatement();
+        } else if (Objects.equals(current_token, "LEFT_BRACE")) {
+            System.out.println("Parser: parseBlock()");
+            parseBlock();
+        }else {
+            error(list_expected_strings);
         }
     }
 
-    public static void parsePrintStatement(String current_token) {
+    public static void parsePrintStatement() {
         match(current_token, "PRINT");
-        match(current_token, "LEFT_PARENTHESIS");
-        parseExpr(current_token);
-        match(current_token, "RIGHT_PARENTHESIS");
+        match(current_token, "LEFT_PAREN");
+        System.out.println("Parser: parseExpr()");
+        parseExpr();
+        match(current_token, "RIGHT_PAREN");
     }
 
-    public static void parseAssignmentStatement(String current_token) {
-        parseId(current_token);
+    public static void parseAssignmentStatement() {
+        System.out.println("Parser: parseId()");
+        parseId();
         match(current_token,"ASSIGN");
-        parseExpr(current_token);
+        System.out.println("Parser: parseExpr()");
+        parseExpr();
     }
 
-    public static void parseVarDecl(String current_token) {
-        parseType(current_token);
-        parseId(current_token);
+    public static void parseVarDecl() {
+        System.out.println("Parser: parseType()");
+        parseType();
+        System.out.println("Parser: parseId()");
+        parseId();
     }
 
-    public static void parseWhileStatement(String current_token) {
+    public static void parseWhileStatement() {
         match(current_token, "WHILE");
-        parseBooleanExpr(current_token);
-        parseBlock(current_token);
+        System.out.println("Parser: parseBooleanExpr()");
+        parseBooleanExpr();
+        System.out.println("Parser: parseBlock()");
+        parseBlock();
     }
 
-    public static void parseIfStatement(String current_token) {
+    public static void parseIfStatement() {
         match(current_token,"IF");
-        parseBooleanExpr(current_token);
-        parseBlock(current_token);
+        System.out.println("Parser: parseBooleanExpr()");
+        parseBooleanExpr();
+        System.out.println("Parser: parseBlock()");
+        parseBlock();
     }
 
-    public static void parseExpr(String current_token) {
-        if (Objects.equals(current_token, "INT_I-TYPE")) {
-            parseIntExpr(current_token);
-        } else if (Objects.equals(current_token, "STRING_I_TYPE")) {
-            parseStringExpr(current_token);
-        } else if (Objects.equals(current_token, "BOOL_I_TYPE")) {
-            parseBooleanExpr(current_token);
-        } else if (Objects.equals(current_token, "ID")) {
-            parseId(current_token);
-        } else {
-            error(current_token);
-        }
-    }
+    public static void parseExpr() {
+        list_expected_strings.clear();
+        list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
 
-    public static void parseIntExpr(String current_token) {
         if (Objects.equals(current_token, "DIGIT")) {
-            match(current_token,"DIGIT");
+            System.out.println("Parser: parseIntExpr()");
+            parseIntExpr();
+        } else if (Objects.equals(current_token, "STRING")) {
+            System.out.println("Parser: parseStringExpr()");
+            parseStringExpr();
+        } else if (Objects.equals(current_token, "LEFT_PAREN")
+                || Objects.equals(current_token, "TRUE")
+                || Objects.equals(current_token, "FALSE") ) {
+            System.out.println("Parser: parseBooleanExpr()");
+            parseBooleanExpr();
+        } else if (Objects.equals(current_token, "ID")) {
+            System.out.println("Parser: parseId()");
+            parseId();
         } else {
-            match(current_token, "DIGIT");
-            parseIntOp(current_token);
-            parseExpr(current_token);
+            System.out.println("Parser: error()");
+            error(list_expected_strings);
         }
     }
 
-    public static void parseStringExpr(String current_token) {
+    public static void parseIntExpr() {
+        match(current_token,"DIGIT");
+        if (Objects.equals(current_token, "PLUS")) {
+            System.out.println("Parser: parseIntOp()");
+            parseIntOp();
+            System.out.println("Parser: parseExpr()");
+            parseExpr();
+        }
+    }
+
+    public static void parseStringExpr() {
+        System.out.println("Parser: parseStringExpr()");
         match(current_token,"STRING");
     }
 
-    public static void parseBooleanExpr(String current_token) {
-        if (current_token == "LEFT_PARENTHESIS") {
-            match(current_token,"LEFT_PARENTHESIS");
-            parseExpr(current_token);
-            parseBoolOp(current_token);
-            parseExpr(current_token);
-            match(current_token,"RIGHT_PARENTHESIS");
+    public static void parseBooleanExpr() {
+
+        if (Objects.equals(current_token, "FALSE")
+                || Objects.equals(current_token, "TRUE")) {
+            System.out.println("Parser: parseBoolVal()");
+            parseBoolVal();
         } else {
-            parseBoolVal(current_token);
+            match(current_token, "LEFT_PAREN");
+            System.out.println("Parser: parseExpr()");
+            parseExpr();
+            System.out.println("Parser: parseBoolOp()");
+            parseBoolOp();
+            System.out.println("Parser: parseExpr()");
+            parseExpr();
+            match(current_token,"RIGHT_PAREN");
         }
     }
 
-    public static void parseId(String current_token) {
+    public static void parseId() {
         match(current_token,"ID");
     }
 
@@ -198,19 +251,23 @@ public class Parser {
         }
     }*/
 
-    public static void parseType(String current_token) {
-        if (current_token == "INT_I_TYPE") {
-            match(current_token,"INT_I_TYPE");
-        } else if (current_token == "STRING_I_TYPE") {
-            match(current_token,"STRING_I_TYPE");
-        } else if (current_token == "BOOL_I_TYPE") {
-            match(current_token,"BOOL_I_TYPE");
+    public static void parseType() {
+        list_expected_strings.clear();
+        list_expected_strings.addAll(Arrays.asList("INT", "STRING", "BOOLEAN"));
+
+        if (Objects.equals(current_token, "INT")) {
+            match(current_token,"INT");
+        } else if (Objects.equals(current_token, "STRING")) {
+            match(current_token,"STRING");
+        } else if (Objects.equals(current_token, "BOOLEAN")) {
+            match(current_token,"BOOLEAN");
         } else {
-            error(current_token);
+            System.out.println("Parser: error()");
+            error(list_expected_strings);
         }
     }
 
-    public static void parseBoolOp(String current_token) {
+    public static void parseBoolOp() {
         if (Objects.equals(current_token, "EQUAL_TO_OP")) {
             match(current_token,"EQUAL_TO_OP");
         } else {
@@ -218,21 +275,32 @@ public class Parser {
         }
     }
 
-    public static void parseBoolVal(String current_token) {
-        if (Objects.equals(current_token, "FALSE_BOOL_VAL")) {
-            match(current_token,"FALSE_BOOL_VAL");
-        } else if (Objects.equals(current_token, "TRUE_BOOL_VAL")){
-            match(current_token,"TRUE_BOOL_VAL");
-            error( current_token);
+    public static void parseBoolVal() {
+        list_expected_strings.clear();
+        list_expected_strings.addAll(Arrays.asList("False", "TRUE"));
+
+        if (Objects.equals(current_token, "FALSE")) {
+            match(current_token,"FALSE");
+        } else if (Objects.equals(current_token, "TRUE")){
+            match(current_token,"TRUE");
+        } else {
+            System.out.println("Parser: error()");
+            error(list_expected_strings);
         }
     }
 
-    public static void parseIntOp(String current_token) {
+    public static void parseIntOp() {
         match(current_token,"PLUS");
     }
 
-    public static void error(String current_token) {
-        System.out.println("there is an error. You can check later!");
+    public static void error(ArrayList<String> list_expected_tokens) {
+
+        System.out.println("expected one of these " + list_expected_tokens.toString() + " but found " + current_token);
+    }
+
+    public static void getTokens (int program_number, List<Tokens> toks) {
+        tokens = toks;
+        PROGRAM_NUMBER = program_number;
     }
 
 }
