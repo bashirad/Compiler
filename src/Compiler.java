@@ -11,7 +11,7 @@ public class Compiler implements ICompiler {
             Lexer.init_Lexer(filePath);
 
             /** Execute the Parser                  */
-            Parser.init_Parser(filePath);
+            //Parser.init_Parser(filePath);
 
             /** Execute the Semantics ...           */
 
