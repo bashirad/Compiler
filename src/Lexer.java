@@ -40,7 +40,11 @@ public class Lexer {
      * This method passes the stream of tokens to the Parser
      */
     public static List<Tokens> passTokens (String path) {
+
+        System.out.println("\nINFO Lexer - Lexing program " + 1 + " ... ");
+
         scan(path);
+
         return tokens;
     }
 
@@ -174,7 +178,7 @@ public class Lexer {
                             }
 
                             tokenSymbol = str;
-                            Tokens currentToken = new Tokens("string", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Tokens currentToken = new Tokens("STRING", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName.toUpperCase(), currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
 
@@ -208,7 +212,13 @@ public class Lexer {
                             }
                         } else if (Objects.equals(getSymbolName(tokenSymbol), "EOP") ){
 
-                            if( i == code.length() - 1 ) {
+                            System.out.println("DEBUG Lexer - Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
+                            // pass the tokens to the Parser
+                            Parser.getTokens(PROGRAM_NUMBER, tokens);
+
+                            Parser.init_Parser();
+
+                            if ( i == code.length() - 3) {
                                 // do nothing
                                 // Now this is the last $ sign
                                 break;
@@ -351,10 +361,10 @@ public class Lexer {
                 tokenName = "EOP";
                 break;
             case "(":
-                tokenName = "LEFT_PARENTHESIS";
+                tokenName = "LEFT_PAREN";
                 break;
             case ")":
-                tokenName = "RIGHT_PARENTHESIS";
+                tokenName = "RIGHT_PAREN";
                 break;
             case "{":
                 tokenName = "LEFT_BRACE";
@@ -397,8 +407,8 @@ public class Lexer {
     public static void log(int progNum, Boolean debug, String compilerStage, String tokenName, String tokenSymbol,
                     int tokenLineNum, int tokenPosNum) {
         if (debug) {
-            System.out.println("DEBUG " + compilerStage + " - " + tokenName + " [ " + tokenSymbol + " ] found at ("
-                                + tokenLineNum + ":" + tokenPosNum + ")");
+            System.out.printf("DEBUG %-4s -  %-16s [ %-16s ] found at (%-2d:%-2d)\n", compilerStage, tokenName,
+                    String.format("%" + 2 + "s%s%" + 2 + "s", "", tokenSymbol, ""), tokenLineNum, tokenPosNum);
         }
     }
 
@@ -406,19 +416,19 @@ public class Lexer {
         String tokenName;
         switch (c) {
             case "int":
-                tokenName = "INT_I-TYPE";
+                tokenName = "INT";
                 break;
             case "string":
-                tokenName = "STRING_I-TYPE";
+                tokenName = "STRING";
                 break;
             case "boolean":
-                tokenName = "BOOL_I-TYPE";
+                tokenName = "BOOLEAN";
                 break;
             case "false":
-                tokenName = "FALSE_BOOL_VAL";
+                tokenName = "FALSE";
                 break;
             case "true":
-                tokenName = "TRUE_BOOL_VAL";
+                tokenName = "TRUE";
                 break;
             case "while":
                 tokenName = "WHILE";
