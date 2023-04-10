@@ -26,18 +26,3 @@ if (5+a=="test"){
 }$
 
 
-// Code for going through the stream of tokens
-
-  /*Tokens currentToken = null;
-        for (int i = 0; i < tokens.size(); i++) {
-            currentToken = tokens.get(i);
-            System.out.print(currentToken.getLexemeName());
-            System.out.print(" ");
-            System.out.print(currentToken.getSymbol());
-            System.out.print(" ");
-            System.out.print(currentToken.getLineNum());
-            System.out.print(" ");
-            System.out.print(currentToken.getPosNum());
-            System.out.println("\n");
-            // Perform any other operations with currentToken here
-        }*/
