@@ -16,7 +16,7 @@ public class Lexer {
     private static int PROGRAM_NUMBER = 1;
 
     // Create a list of tokens
-    static List<Tokens> tokens = new ArrayList<>();
+    static ArrayList<Tokens> tokens = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -218,7 +218,10 @@ public class Lexer {
 
                             Parser.init_Parser();
 
-                            if ( i == code.length() - 3) {
+                            //PrintCST myTree = new PrintCST();
+                            //myTree.print();
+
+                            if ( i == code.length() - 1) {
                                 // do nothing
                                 // Now this is the last $ sign
                                 break;
@@ -303,6 +306,7 @@ public class Lexer {
             currentPosition++;                      // increment the current position
 
         }
+        code = code.trim();
         return code;
     }
 
