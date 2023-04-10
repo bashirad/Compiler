@@ -1,57 +1,28 @@
-Front end -
-	intermediate representation - concrete syntax trees
-Back end - website, optimization
+LEXER - ALL TOKENS
+{/* Comment!!!*/ ()
+print=whileif"teststring"
+intstringbooleanfalse
+true
+==!=+ a 0123456789}$
 
-Semantic refers to meaning - type and scope
-
-Lexer
-	Lex is called scanner
-
-Parser
-	if warning: report and continue compiler
-	if error: report and stop compiler
-	focus on syntax - for example: print stmt must be like this "print ( exp )"
+PARSER - ALL POSSIBLE SENTENCES
+{ print(5) print(5+2) print(5+"text") print("text") print(a)}
+{ print("text") }$
+{ int a = 10 }$
 
 
-AI
-	using AI works, and cite it then make a write a documentation about it.
-
-GitHub
-	develop on separte 4 branches and then put the final code in main.
-	send email to Labouseur about this
-
-Make a class for Tokens and each time create an instance of the class
-OR
-use stream functional programming in Java
-
-'=' assignment operator
-
-left brace and right braces - begin program and end program
-
-$ end of program -
-
-
-if you are lexing more than one program -  lex until you find an error and then skip to the next program using the meta symbol
-
-do not hardcode the filename
-	the filename is the first parameter
-
-Line and position numbers should be passed with the Tokens
-
-have open quote and close quote symbols
-
-
-TEST CODE IS HERE:
-
-{}$
-{{{{{{}}}}}}$
-{{{{{{}}} /* comments are ignored */ }}}}$
-{ /* comments are still ignored */ int @}$
 {
- int a
- a = a
- string b
- a = b
- print (5)
+{int astringb}
+{
+print(a)print(2)print(0+1)print(false)print(true)print("test")print((a==b))print((a!="tes t"))
+a = aa=bb=bb=1b=1+bb="te st"b=""b=falseb=true
+while (true){
+if (5+a=="test"){
+
+}
+}
+
+}
 }$
+
 
