@@ -1,13 +1,13 @@
 import java.util.*;
 
-public class Parser {
+public class Parser extends Tree{
     private static int PROGRAM_NUMBER = 0;
-    private static List<Tokens> tokens;
-    private static Tokens token;
+    private static ArrayList<Tokens> tokens;
     private static int token_pointer;
     private static String current_token;
+    private static Tokens token = null;
     private static int error_count = 0;
-    private static ArrayList<String> list_expected_strings = new ArrayList<>();
+    private static final ArrayList<String> list_expected_strings = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -17,7 +17,7 @@ public class Parser {
 
         // TODO figure out a way to pass tokens to parser at the end of lexing each program
         //init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
-        init_Parser();
+        Parser.init_Parser();
     }
 
     public static void init_Parser() {
@@ -29,6 +29,8 @@ public class Parser {
 
         System.out.println("\nINFO Parser - Parsing program " + PROGRAM_NUMBER + " ... ");
 
+        Tree myTree = new Tree();
+
         token_pointer = 0;
         token = tokens.get(token_pointer);
         current_token = token.getLexemeName();
@@ -39,47 +41,60 @@ public class Parser {
          * start parsing the source code
          */
         System.out.println("Parser: parseProgram()");
-        parseProgram();
-
+        Parser myParser = new Parser();
+        myParser.parseProgram();
 
         /**
          * if no errors, parsing is successful
          */
-            if (error_count == 0) {
-                System.out.println("DEBUG Parser - Parsing of program " + PROGRAM_NUMBER + " completed with no errors");
-            }
+        if (error_count == 0) {
+            System.out.println("DEBUG Parser - Parsing of program " + PROGRAM_NUMBER + " completed with no errors");
+            /**
+             * print the CST
+             */
+
+            PrintCST cstPrinter = new PrintCST(myTree);
+            cstPrinter.print();
+        }
 
 
     }
 
     /**
-     match method to check currentToken to the expectedToken
+     * match method to check currentToken to the expectedToken
      */
-    public static void match(String cur_tok, String expected_token) {
+    public void match(String cur_tok, String expected_token) {
 
         if (Objects.equals(current_token, expected_token)) {
 
             //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
 
+            addNode("leaf", token.getSymbol()); // leaf, expected_token
+
             token_pointer++;
 
             if (token_pointer < Lexer.tokens.size()) {
+                token = Lexer.tokens.get(token_pointer);
                 current_token = Lexer.tokens.get(token_pointer).getLexemeName();
             }
-                // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
+            // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
 
         } else {
             error_count++;
-            System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
+            //System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
         }
     }
 
     /**
-     Procedure to parse Program
+     * Procedure to parse Program
      */
-    public static void parseProgram() {
+    public void parseProgram() {
+        addNode("root", "program");
+
         System.out.println("Parser: parseBlock()");
         parseBlock();
+
+        moveUp();
         /**
          * EOP is not part of the program unless it is separating two programs
          */
@@ -87,18 +102,23 @@ public class Parser {
     }
 
     /**
-     Procedure to parse Block
-    */
-    public static void parseBlock() {
-        match(current_token,"LEFT_BRACE");
+     * Procedure to parse Block
+     */
+    public void parseBlock() {
+        addNode("branch", "block");
+
+        this.match(current_token, "LEFT_BRACE");
         parseStatementList();
         match(current_token, "RIGHT_BRACE");
+
+        moveUp();
     }
 
     /**
-    Procedure to parse StatementList
-    */
-    public static void parseStatementList() {
+     * Procedure to parse StatementList
+     */
+    public void parseStatementList() {
+        addNode("branch", "statementList");
 
         Set<String> validTokens =
                 new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
@@ -109,8 +129,13 @@ public class Parser {
             System.out.println("Parser: parseStatementList()");
             parseStatementList();
         }
+
+        moveUp();
     }
-    public static void parseStatement() {
+
+    public void parseStatement() {
+        addNode("branch", "statement");
+
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("PRINT", "ASSIGN", "ID", "WHILE", "IF", "LEFT_BRACE"));
 
@@ -135,51 +160,78 @@ public class Parser {
         } else if (Objects.equals(current_token, "LEFT_BRACE")) {
             System.out.println("Parser: parseBlock()");
             parseBlock();
-        }else {
+        } else {
             error(list_expected_strings);
         }
+
+        moveUp();
     }
 
-    public static void parsePrintStatement() {
+    public void parsePrintStatement() {
+        addNode("branch", "printStatement");
+
         match(current_token, "PRINT");
         match(current_token, "LEFT_PAREN");
         System.out.println("Parser: parseExpr()");
         parseExpr();
         match(current_token, "RIGHT_PAREN");
+
+        moveUp();
     }
 
-    public static void parseAssignmentStatement() {
+    public void parseAssignmentStatement() {
+        addNode("branch", "assignmentStatement");
+
         System.out.println("Parser: parseId()");
         parseId();
-        match(current_token,"ASSIGN");
+        match(current_token, "ASSIGN");
         System.out.println("Parser: parseExpr()");
         parseExpr();
+
+        moveUp();
     }
 
-    public static void parseVarDecl() {
+    public void parseVarDecl() {
+        addNode("branch", "varDecl");
+
+
         System.out.println("Parser: parseType()");
         parseType();
         System.out.println("Parser: parseId()");
         parseId();
+
+        moveUp();
     }
 
-    public static void parseWhileStatement() {
+    public void parseWhileStatement() {
+        addNode("branch", "whileStatement");
+
+
         match(current_token, "WHILE");
         System.out.println("Parser: parseBooleanExpr()");
         parseBooleanExpr();
         System.out.println("Parser: parseBlock()");
         parseBlock();
+
+        moveUp();
     }
 
-    public static void parseIfStatement() {
-        match(current_token,"IF");
+    public void parseIfStatement() {
+        addNode("branch", "ifStatement");
+
+
+        match(current_token, "IF");
         System.out.println("Parser: parseBooleanExpr()");
         parseBooleanExpr();
         System.out.println("Parser: parseBlock()");
         parseBlock();
+
+        moveUp();
     }
 
-    public static void parseExpr() {
+    public void parseExpr() {
+        addNode("branch", "expr");
+
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
 
@@ -191,7 +243,7 @@ public class Parser {
             parseStringExpr();
         } else if (Objects.equals(current_token, "LEFT_PAREN")
                 || Objects.equals(current_token, "TRUE")
-                || Objects.equals(current_token, "FALSE") ) {
+                || Objects.equals(current_token, "FALSE")) {
             System.out.println("Parser: parseBooleanExpr()");
             parseBooleanExpr();
         } else if (Objects.equals(current_token, "ID")) {
@@ -201,24 +253,35 @@ public class Parser {
             System.out.println("Parser: error()");
             error(list_expected_strings);
         }
+
+        moveUp();
     }
 
-    public static void parseIntExpr() {
-        match(current_token,"DIGIT");
+    public void parseIntExpr() {
+        addNode("branch", "intExpr");
+
+        match(current_token, "DIGIT");
         if (Objects.equals(current_token, "PLUS")) {
             System.out.println("Parser: parseIntOp()");
             parseIntOp();
             System.out.println("Parser: parseExpr()");
             parseExpr();
         }
+
+        moveUp();
     }
 
-    public static void parseStringExpr() {
+    public void parseStringExpr() {
+        addNode("branch", "stringExpr");
+
         System.out.println("Parser: parseStringExpr()");
-        match(current_token,"STRING");
+        match(current_token, "STRING");
+
+        moveUp();
     }
 
-    public static void parseBooleanExpr() {
+    public void parseBooleanExpr() {
+        addNode("branch", "booleanExpr");
 
         if (Objects.equals(current_token, "FALSE")
                 || Objects.equals(current_token, "TRUE")) {
@@ -232,12 +295,18 @@ public class Parser {
             parseBoolOp();
             System.out.println("Parser: parseExpr()");
             parseExpr();
-            match(current_token,"RIGHT_PAREN");
+            match(current_token, "RIGHT_PAREN");
         }
+
+        moveUp();
     }
 
-    public static void parseId() {
-        match(current_token,"ID");
+    public void parseId() {
+        addNode("branch", "id");
+
+        match(current_token, "ID");
+
+        moveUp();
     }
 
     // TODO delete this method when done as you are not separating the string into char list
@@ -251,56 +320,74 @@ public class Parser {
         }
     }*/
 
-    public static void parseType() {
+    public void parseType() {
+        addNode("branch", "type");
+
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("INT", "STRING", "BOOLEAN"));
 
         if (Objects.equals(current_token, "INT")) {
-            match(current_token,"INT");
+            match(current_token, "INT");
         } else if (Objects.equals(current_token, "STRING")) {
-            match(current_token,"STRING");
+            match(current_token, "STRING");
         } else if (Objects.equals(current_token, "BOOLEAN")) {
-            match(current_token,"BOOLEAN");
+            match(current_token, "BOOLEAN");
         } else {
             System.out.println("Parser: error()");
             error(list_expected_strings);
         }
+
+        moveUp();
     }
 
-    public static void parseBoolOp() {
+    public void parseBoolOp() {
+        addNode("branch", "boolOp");
+
         if (Objects.equals(current_token, "EQUAL_TO_OP")) {
-            match(current_token,"EQUAL_TO_OP");
+            match(current_token, "EQUAL_TO_OP");
         } else {
-            match(current_token,"NOT_EQUAL_TO_OP");
+            match(current_token, "NOT_EQUAL_TO_OP");
         }
+
+        moveUp();
     }
 
-    public static void parseBoolVal() {
+    public void parseBoolVal() {
+        addNode("branch", "boolVal");
+
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("False", "TRUE"));
 
         if (Objects.equals(current_token, "FALSE")) {
-            match(current_token,"FALSE");
-        } else if (Objects.equals(current_token, "TRUE")){
-            match(current_token,"TRUE");
+            match(current_token, "FALSE");
+        } else if (Objects.equals(current_token, "TRUE")) {
+            match(current_token, "TRUE");
         } else {
             System.out.println("Parser: error()");
             error(list_expected_strings);
         }
+
+        moveUp();
     }
 
-    public static void parseIntOp() {
-        match(current_token,"PLUS");
+    public void parseIntOp() {
+        addNode("branch", "intOp");
+
+        match(current_token, "PLUS");
+
+        moveUp();
     }
 
-    public static void error(ArrayList<String> list_expected_tokens) {
-
+    public void error(ArrayList<String> list_expected_tokens) {
         System.out.println("expected one of these " + list_expected_tokens.toString() + " but found " + current_token);
     }
 
-    public static void getTokens (int program_number, List<Tokens> toks) {
+    public static void getTokens(int program_number, ArrayList<Tokens> toks) {
         tokens = toks;
         PROGRAM_NUMBER = program_number;
     }
+    Tree tree = new Tree();
 
 }
+
+
