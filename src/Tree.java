@@ -91,24 +91,15 @@ public class Tree {
         }
     }
 
-    public static class PrintCST extends Tree {
-        public PrintCST(Tree myTree) {
-            // Copy the nodes of the original tree to the new tree
-            this.root = myTree.root;
-            this.cur = myTree.cur;
-        }
-
         // Return a string representation of the tree.
-        public void print() {
-
-            Tree cst = new Tree();
+        public void print(Tree cst) {
 
             // Initialize the result string.
             StringBuilder traversalResult = new StringBuilder();
 
-            if (this.root != null) {
+            if (cst.root != null) {
                 // Recursive function to handle the expansion of the nodes.
-                expand(this.root, 0, traversalResult);
+                expand(cst.root, 0, traversalResult);
 
                 // Return the result.
                 System.out.println(traversalResult);
@@ -138,6 +129,5 @@ public class Tree {
                 }
             }
         }
-    }
 }
 
