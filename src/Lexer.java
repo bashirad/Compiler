@@ -211,6 +211,11 @@ public class Lexer {
                                 POSITION_NUMBER++;
                             }
                         } else if (Objects.equals(getSymbolName(tokenSymbol), "EOP") ){
+                            Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
+                                    currentToken.lineNum, currentToken.positionNum);
+
+                            tokens.add(currentToken);
 
                             System.out.println("DEBUG Lexer - Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
                             // pass the tokens to the Parser
