@@ -1,5 +1,1 @@
-
-print=whileif"teststring"
-intstringbooleanfalse
-true
-==!=+ a(){}$/*COMMENT*/m
+{{{{}}}}$
