@@ -1,24 +1,6 @@
 {
-  {{{{{{}}}}}}
-  a=1+2+3+4+5
-  print(1+2+3+4+5)
-  print("")
-  print(a)
-  print(2)
-  print(2+a)
-  print("a")
-  print(true)
-  print(false)
-  print("inta")
-  a=1
-  a = 1
-  a = 1 + 2 + 3 + 4     +      5
-  a = 4 + a
-  int a
-  string a
-  boolean a
-  /* check that comments still work */
-  a = a
-  string b
-  a = b
+
+int a
+a = 5
+
 }$
