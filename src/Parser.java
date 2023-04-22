@@ -18,7 +18,9 @@ public class Parser extends Tree{
 
         // TODO figure out a way to pass tokens to parser at the end of lexing each program
         //init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
-        Parser.init_Parser();
+        //Parser.init_Parser();
+
+        Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
     }
 
     public static void init_Parser() {
@@ -56,6 +58,10 @@ public class Parser extends Tree{
 
             Tree tree = new Tree();
             tree.print(myCST);
+
+            /**
+             * pass the CST to the Semantics Analysis
+             */
         }
 
 
@@ -122,7 +128,7 @@ public class Parser extends Tree{
         myCST.addNode("StatementList", "branch");
 
         Set<String> validTokens =
-                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
+                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "ID", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
 
         if (validTokens.contains(current_token)) {
             System.out.println("Parser: parseStatement()");
@@ -138,13 +144,13 @@ public class Parser extends Tree{
         myCST.addNode("Statement", "branch");
 
         list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("PRINT", "ASSIGN", "ID", "WHILE", "IF", "LEFT_BRACE"));
+        list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
 
 
         if (Objects.equals(current_token, "PRINT")) {
             System.out.println("Parser: parsePrintStatement()");
             parsePrintStatement();
-        } else if (Objects.equals(current_token, "ASSIGN")) {
+        } else if (Objects.equals(current_token, "ID")) {
             System.out.println("Parser: parseAssignmentStatement()");
             parseAssignmentStatement();
         } else if (Objects.equals(current_token, "INT")
@@ -181,7 +187,7 @@ public class Parser extends Tree{
     }
 
     public void parseAssignmentStatement() {
-        myCST.addNode("AssignmentStatement", "branch");
+        myCST.addNode("Assignment Statement", "branch");
 
         System.out.println("Parser: parseId()");
         parseId();
