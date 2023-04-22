@@ -128,7 +128,7 @@ public class Parser extends Tree{
         myCST.addNode("StatementList", "branch");
 
         Set<String> validTokens =
-                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "ID", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
+                new HashSet<>(Arrays.asList("PRINT", "INT", "STRING", "ID", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
 
         if (validTokens.contains(current_token)) {
             System.out.println("Parser: parseStatement()");
