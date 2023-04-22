@@ -122,7 +122,7 @@ public class Parser extends Tree{
         myCST.addNode("StatementList", "branch");
 
         Set<String> validTokens =
-                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
+                new HashSet<>(Arrays.asList("PRINT", "ASSIGN", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE", "ID"));
 
         if (validTokens.contains(current_token)) {
             System.out.println("Parser: parseStatement()");
@@ -138,13 +138,14 @@ public class Parser extends Tree{
         myCST.addNode("Statement", "branch");
 
         list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("PRINT", "ASSIGN", "ID", "WHILE", "IF", "LEFT_BRACE"));
+        list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
 
 
+        // TODO order the following like our grammar paper orders them
         if (Objects.equals(current_token, "PRINT")) {
             System.out.println("Parser: parsePrintStatement()");
             parsePrintStatement();
-        } else if (Objects.equals(current_token, "ASSIGN")) {
+        } else if (Objects.equals(current_token, "ID")) {
             System.out.println("Parser: parseAssignmentStatement()");
             parseAssignmentStatement();
         } else if (Objects.equals(current_token, "INT")
@@ -183,10 +184,8 @@ public class Parser extends Tree{
     public void parseAssignmentStatement() {
         myCST.addNode("AssignmentStatement", "branch");
 
-        System.out.println("Parser: parseId()");
         parseId();
         match(current_token, "ASSIGN");
-        System.out.println("Parser: parseExpr()");
         parseExpr();
 
         myCST.moveUp();
@@ -195,10 +194,7 @@ public class Parser extends Tree{
     public void parseVarDecl() {
         myCST.addNode("VarDecl", "branch");
 
-
-        System.out.println("Parser: parseType()");
         parseType();
-        System.out.println("Parser: parseId()");
         parseId();
 
         myCST.moveUp();
@@ -384,10 +380,10 @@ public class Parser extends Tree{
     }
 
     public static void getTokens(int program_number, ArrayList<Tokens> toks) {
+
         tokens = toks;
         PROGRAM_NUMBER = program_number;
     }
-    Tree tree = new Tree();
 
 }
 
