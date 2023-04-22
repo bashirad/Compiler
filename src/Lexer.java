@@ -220,8 +220,11 @@ public class Lexer {
                             System.out.println("DEBUG Lexer - Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
                             // pass the tokens to the Parser
                             Parser.getTokens(PROGRAM_NUMBER, tokens);
+                            //Parser.init_Parser();
 
-                            Parser.init_Parser();
+                            // pass the tokens to Semantic Analysis
+                            SemanticAnalysis.getTokens(PROGRAM_NUMBER, tokens);
+                            SemanticAnalysis.init_Semantic();
 
                             //PrintCST myTree = new PrintCST();
                             //myTree.print();
