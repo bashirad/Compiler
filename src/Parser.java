@@ -130,9 +130,10 @@ public class Parser extends Tree{
             parseStatement();
 
             parseStatementList();
+
+            myCST.moveUp();
         }
 
-        myCST.moveUp();
     }
 
     public void parseStatement() {
