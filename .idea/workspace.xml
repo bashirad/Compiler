@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -98,7 +100,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/Lexer.java</url>
-          <line>53</line>
+          <line>54</line>
           <properties class="Lexer" method="scan">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
