@@ -14,6 +14,7 @@ public class Lexer {
     private static Tokens currentTokenKeyword;
     private static StringBuilder strBuilder;
     private static int PROGRAM_NUMBER = 1;
+    private static int error_count = 0;
 
     // Create a list of tokens
     static ArrayList<Tokens> tokens = new ArrayList<>();
@@ -27,7 +28,7 @@ public class Lexer {
     }
     public static void init_Lexer( String path) {
 
-        System.out.println("\nINFO Lexer - Lexing program " + 1 + " ... ");
+        System.out.println("\nINFO Lexer   -  Lexing program " + PROGRAM_NUMBER + " ... ");
 
         /**
          * Start lexing the source code
@@ -41,7 +42,7 @@ public class Lexer {
      */
     public static List<Tokens> passTokens (String path) {
 
-        System.out.println("\nINFO Lexer - Lexing program " + 1 + " ... ");
+        System.out.println("\nINFO Lexer   -  Lexing program " + 1 + " ... ");
 
         scan(path);
 
@@ -173,7 +174,7 @@ public class Lexer {
                                 }
                             }
                             if (str == "") {
-                                System.out.println("DEBUG Lexer - WARNING: Cannot find the second/closing quotation mark!");
+                                System.out.println("WARNING Lexer - Cannot find the second/closing quotation mark!");
                                 str += '\u0022';
                             }
 
@@ -206,9 +207,19 @@ public class Lexer {
 
                                         break;
                                     }
+                                    else if (s == code.length() - 1) {
+                                        error_count++;
+                                        System.out.println("Unclosed comments");
+                                    }
+                                } else if (s == code.length() - 1) {
+                                    error_count++;
+                                    System.out.println("Error Lexer -  Unclosed comments");
+                                    System.out.println("INFO Lexer   -  Lexing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+                                } else {
+                                    strBuilder.append(curChar);
+
+                                    POSITION_NUMBER++;
                                 }
-                                strBuilder.append(curChar);
-                                POSITION_NUMBER++;
                             }
                         } else if (Objects.equals(getSymbolName(tokenSymbol), "EOP") ){
                             Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
@@ -217,17 +228,21 @@ public class Lexer {
 
                             tokens.add(currentToken);
 
-                            System.out.println("DEBUG Lexer - Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
-                            // pass the tokens to the Parser
-                            Parser.getTokens(PROGRAM_NUMBER, tokens);
-                            //Parser.init_Parser();
 
-                            // pass the tokens to Semantic Analysis
-                            SemanticAnalysis.getTokens(PROGRAM_NUMBER, tokens);
-                            SemanticAnalysis.init_Semantic();
 
-                            //PrintCST myTree = new PrintCST();
-                            //myTree.print();
+                            if (error_count == 0) {
+                                System.out.println("INFO Lexer   -  Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
+                                // pass the tokens to the Parser
+                                Parser.getTokens(PROGRAM_NUMBER, tokens);
+
+                                Parser.init_Parser();
+                            } else {
+                                System.out.println("INFO Parser  - Lexing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+
+                                System.out.println("\nParser for program " + PROGRAM_NUMBER + " skipped due to Lexer ERROR");
+
+
+                            }
 
                             if ( i == code.length() - 1) {
                                 // do nothing
@@ -235,10 +250,14 @@ public class Lexer {
                                 break;
                             } else {
                                 PROGRAM_NUMBER++;
-                                System.out.println("\n\nINFO Lexer - Lexing program " + PROGRAM_NUMBER + " ... ");
+                                System.out.println("\n\nINFO Lexer   -   Lexing program " + PROGRAM_NUMBER + " ... ");
                             }
-                        }
-                        else {
+                        } else if (Objects.equals(getSymbolName(tokenSymbol), "ASTERISK")) {
+                            error_count++;
+                            System.out.println("ERROR Lexer -  Unrecognized Token [ " + currentCharacter + " ]  found at ("
+                                    + LINE_NUMBER + " : " + POSITION_NUMBER + ")");
+
+                        } else {
                             Tokens currentToken = new Tokens(getSymbolName(tokenSymbol), tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName, currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
@@ -264,8 +283,9 @@ public class Lexer {
                         if (isWHITESPACE(currentCharacter)) {
                             // ignore and do nothing because it is a white space
                         } else {
-                            System.out.println("ERROR Lexer - Unrecognized Token " + currentCharacter + "  found at ("
-                                    + LINE_NUMBER + ":" + POSITION_NUMBER + ")");
+                            error_count++;
+                            System.out.println("ERROR Lexer -  Unrecognized Token [ " + currentCharacter + " ]  found at ("
+                                    + LINE_NUMBER + " : " + POSITION_NUMBER + ")");
                         }
                     }
 
@@ -419,8 +439,8 @@ public class Lexer {
     public static void log(int progNum, Boolean debug, String compilerStage, String tokenName, String tokenSymbol,
                     int tokenLineNum, int tokenPosNum) {
         if (debug) {
-            System.out.printf("DEBUG %-4s -  %-16s [ %-16s ] found at (%-2d:%-2d)\n", compilerStage, tokenName,
-                    String.format("%" + 2 + "s%s%" + 2 + "s", "", tokenSymbol, ""), tokenLineNum, tokenPosNum);
+            System.out.printf("INFO %-4s   -  %-16s [ %-16s ] found at (%-2d:%2d)\n", compilerStage, tokenName,
+                    String.format("%" + 1 + "s%s%" + 1 + "s", "", tokenSymbol, ""), tokenLineNum, tokenPosNum);
         }
     }
 
