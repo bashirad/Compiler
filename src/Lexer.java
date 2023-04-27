@@ -229,6 +229,7 @@ public class Lexer {
                             tokens.add(currentToken);
 
 
+
                             if (error_count == 0) {
                                 System.out.println("INFO Lexer   -  Lexing of program " + PROGRAM_NUMBER + " completed with no errors");
                                 // pass the tokens to the Parser
@@ -239,6 +240,7 @@ public class Lexer {
                                 System.out.println("INFO Parser  - Lexing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
 
                                 System.out.println("\nParser for program " + PROGRAM_NUMBER + " skipped due to Lexer ERROR");
+
 
                             }
 

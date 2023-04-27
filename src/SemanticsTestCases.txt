@@ -1,0 +1,10 @@
+Semantic Analysis checks for scope and mistype assignments
+
+
+Case One: Unbalanced Curly braces
+
+{ {
+
+}$
+
+Case Two:

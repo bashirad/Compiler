@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lexer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
     </list>
+
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,7 +48,8 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Bashir/Documents/Bashirs_Code_all/Java/cmpt432/src&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Bashir/Documents/Bashirs_Code_all/Java/cmpt432/src&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -58,8 +61,10 @@
       <recent name="lexer" />
     </key>
   </component>
+
   <component name="RunManager">
     <configuration name="Lexer" type="Application" factoryName="Application" nameIsGenerated="true">
+
       <option name="MAIN_CLASS_NAME" value="Lexer" />
       <module name="cmpt432" />
       <method v="2">
@@ -98,7 +103,7 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-method">
+        <line-breakpoint type="java-method">
           <url>file://$PROJECT_DIR$/src/Lexer.java</url>
           <line>54</line>
           <properties class="Lexer" method="scan">
@@ -107,7 +112,15 @@
           </properties>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
+
       </breakpoints>
+      <breakpoints-dialog>
+        <breakpoints-dialog>
+          <selected-grouping-rules>
+            <grouping-rule id="XBreakpointGroupingByClassRule" />
+          </selected-grouping-rules>
+        </breakpoints-dialog>
+      </breakpoints-dialog>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="Application">
