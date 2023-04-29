@@ -179,7 +179,7 @@ public class Lexer {
                             }
 
                             tokenSymbol = str;
-                            Tokens currentToken = new Tokens("STRING", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
+                            Tokens currentToken = new Tokens("CHAR_LIST", tokenSymbol, LINE_NUMBER, POSITION_NUMBER);
                             Lexer.log(PROGRAM_NUMBER, true, "Lexer", currentToken.lexemeName.toUpperCase(), currentToken.symbol,
                                     currentToken.lineNum, currentToken.positionNum);
 
