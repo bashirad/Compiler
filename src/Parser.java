@@ -16,10 +16,6 @@ public class Parser extends Tree{
          * Call init_Parser and execute the Parser in the Run environment
          */
 
-        // TODO figure out a way to pass tokens to parser at the end of lexing each program
-        //init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
-        //Parser.init_Parser();
-
         Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
     }
 
@@ -58,6 +54,12 @@ public class Parser extends Tree{
 
             Tree tree = new Tree();
             tree.print(myCST);
+
+            /**
+             * Call the Semantic Analysis
+             */
+            SemanticAnalysis.getTokens(PROGRAM_NUMBER, tokens);
+            SemanticAnalysis.init_Semantic();
 
 
         } else {
@@ -153,8 +155,6 @@ public class Parser extends Tree{
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
 
-
-        // TODO order the following like our grammar paper orders them
         if (Objects.equals(current_token, "PRINT")) {
             System.out.println("INFO Parser  -  parsePrintStatement()");
             parsePrintStatement();
@@ -260,7 +260,7 @@ public class Parser extends Tree{
         if (Objects.equals(current_token, "DIGIT")) {
             System.out.println("INFO Parser  -  parseIntExpr()");
             parseIntExpr();
-        } else if (Objects.equals(current_token, "STRING")) {
+        } else if (Objects.equals(current_token, "CHAR_LIST")) {
             System.out.println("INFO Parser  -  parseStringExpr()");
             parseStringExpr();
         } else if (Objects.equals(current_token, "LEFT_PAREN")
@@ -296,7 +296,7 @@ public class Parser extends Tree{
     public void parseStringExpr() {
         myCST.addNode("StringExpr", "branch");
 
-        match(current_token, "STRING");
+        match(current_token, "CHAR_LIST");
 
         myCST.moveUp();
     }
@@ -390,7 +390,6 @@ public class Parser extends Tree{
     public void error(ArrayList<String> list_expected_tokens) {
         System.out.println("expected one of these " + list_expected_tokens.toString() + " but found " + current_token + " at line " + token.getLineNum() + " position " + token.getPosNum());
 
-        // TODO : think about keeping or removing the following
         error_count++;
         token_pointer = Lexer.tokens.size();
     }
