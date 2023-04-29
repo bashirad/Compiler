@@ -1,7 +1,21 @@
-
-
-/*  While True output: 1 2 3 4 5 6 7 8 9 [does not stop increasing] */
+/*  Testing with all types of statements */
 {
-int
-}$
+    int a
+    {
+        boolean b
+        {
+            string c
+            {
+                int d
+                {
+                    boolean e
+                    {
+                        string f
+                    }
+                }
+            }
+        }
+    }
+}
+$
 
