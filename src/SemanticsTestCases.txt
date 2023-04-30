@@ -25,3 +25,32 @@ Case Two:
 }
 $
 
+CASE THREE:
+
+/*  Testing the scope for multiple variable declarations */
+{
+    int a
+    int g
+    {
+        boolean b
+        boolean g
+        {
+            string c
+            string g
+            {
+                int d
+                int h
+                {
+                    boolean e
+                    boolean h
+                    {
+                        string f
+                        string h
+                    }
+                }
+            }
+        }
+    }
+}
+$
+
