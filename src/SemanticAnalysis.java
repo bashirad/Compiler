@@ -62,8 +62,9 @@ public class SemanticAnalysis extends Tree{
              * Program Symbol Table
              */
             System.out.println("Program " + PROGRAM_NUMBER + " Symbol Table");
-            System.out.println("_________________________________");
-            System.out.println("[Name, Type,    Scope, Line]");
+            System.out.println(" _____________________________");
+            System.out.println("| Name, Type,    Scope, Line  |");
+            System.out.println(" _____________________________");
 
             // Calculate the number of rows needed to store all elements
             int numRows = (int) Math.ceil((double) symbolTableContent.size() / 4);
@@ -85,12 +86,20 @@ public class SemanticAnalysis extends Tree{
                 }
             }
 
-            for (int i = 0; i < symbolTableArray.length; i++) {
-                for (int j = 0; j < symbolTableArray[i].length; j++) {
-                    System.out.print(symbolTableArray[i][j] + "\t");
+            for (String[] strings : symbolTableArray) {
+                System.out.print("| ");
+                for (String string : strings) {
+                    if (string.contains("string")) {
+                        System.out.print(string + "  ");
+                    } else {
+                        System.out.print(string + "  ");
+                    }
+
                 }
+                System.out.print("|");
                 System.out.println();
             }
+            System.out.println(" _____________________________ ");
 
 
         }
@@ -109,9 +118,6 @@ public class SemanticAnalysis extends Tree{
                 scope_num++;
             }
 
-            if (Objects.equals(Lexer.tokens.get(token_pointer),"STRING")) {
-                System.out.println("We don't know if this the actual string or string type in varDecl");
-            }
             if (Objects.equals(current_token, "INT")) {
                 symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " + token.getSymbol(),
                         "    " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
@@ -322,7 +328,24 @@ public class SemanticAnalysis extends Tree{
     public void parseId() {
 
         match(current_token, "ID");
-
+        Tokens tok = Lexer.tokens.get(token_pointer-1);
+        String symbol = "";
+        String name = "";
+        symbol = tok.getSymbol();
+        name = tok.getLexemeName();
+        if (Objects.equals(name, "ID")) {
+            if (!Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "INT")
+                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "STRING")
+                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "BOOLEAN")) {
+                if (symbolTableContent.contains(symbol)) {
+                    if (Objects.equals(String.valueOf(scope_num), (symbolTableContent.get(symbolTableContent.indexOf(symbol) + 2)).trim())) {
+                        System.out.println("variable [ " + symbol + " ] is declared");
+                    } else {
+                        System.out.println("Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
+                    }
+                }
+            }
+        }
     }
 
     public void parseType() {
