@@ -53,7 +53,7 @@ public class Parser extends Tree{
             System.out.println("\n CST for program " + PROGRAM_NUMBER + " ...\n");
 
             Tree tree = new Tree();
-            tree.print(myCST);
+            //tree.print(myCST);
 
             /**
              * Call the Semantic Analysis
