@@ -1,21 +1,12 @@
-/*  Testing with all types of statements */
+/*  Testing the scope for multiple variable declarations */
 {
     int a
+    int g
+    boolean b
+    b = false
+    t = 9
     {
-        boolean b
-        {
-            string c
-            {
-                int d
-                {
-                    boolean e
-                    {
-                        string f
-                    }
-                }
-            }
-        }
+    a = 0
     }
 }
 $
-
