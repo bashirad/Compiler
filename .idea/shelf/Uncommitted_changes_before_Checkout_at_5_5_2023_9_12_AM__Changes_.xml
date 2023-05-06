@@ -1,0 +1,14 @@
+<changelist name="Uncommitted_changes_before_Checkout_at_5_5_2023_9_12_AM_[Changes]" date="1683295958562" recycled="true" deleted="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_5_2023_9_12_AM_[Changes]/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 5/5/2023 9:12 AM [Changes]" />
+  <binary>
+    <option name="BEFORE_PATH" value="src/Lexer.class" />
+    <option name="AFTER_PATH" value="src/Lexer.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_5_2023_9_12_AM_[Changes]/Lexer.class" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="src/Parser.class" />
+    <option name="AFTER_PATH" value="src/Parser.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_5_2023_9_12_AM_[Changes]/Parser.class" />
+  </binary>
+</changelist>

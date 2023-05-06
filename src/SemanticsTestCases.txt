@@ -8,3 +8,49 @@ Case One: Unbalanced Curly braces
 }$
 
 Case Two:
+
+/*  Testing with all types of statements */
+{
+    print(5)
+    a = 5+8+4
+    int a
+
+    while (2 == 2) {
+        print(8)
+    }
+
+    if (2 != 2) {
+        print("they are not equal")
+    }
+}
+$
+
+CASE THREE:
+
+/*  Testing the scope for multiple variable declarations */
+{
+    int a
+    int g
+    {
+        boolean b
+        boolean g
+        {
+            string c
+            string g
+            {
+                int d
+                int h
+                {
+                    boolean e
+                    boolean h
+                    {
+                        string f
+                        string h
+                    }
+                }
+            }
+        }
+    }
+}
+$
+

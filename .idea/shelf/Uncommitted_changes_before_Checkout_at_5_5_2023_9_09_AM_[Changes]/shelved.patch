@@ -1,0 +1,483 @@
+Index: src/code.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/code.txt b/src/code.txt
+--- a/src/code.txt	
++++ b/src/code.txt	
+@@ -1,12 +1,14 @@
+-/*  Testing the scope for multiple variable declarations */
+ {
+-    int a
+-    int g
+-    boolean b
+-    b = false
+-    t = 9
+-    {
+-    a = 0
+-    }
+-}
+-$
++ int a
++ a = 1
++ {
++ string a
++ a = "a"
++ print(a)
++ }
++ string b
++ b = "b"
++ if (a == 1) {
++ print(b)
++ }
++}$
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	
++++ b/.idea/workspace.xml	
+@@ -2,10 +2,14 @@
+ <project version="4">
+   <component name="ChangeListManager">
+     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM__Changes_.xml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM__Changes_.xml" beforeDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lexer.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/SemanticAnalysis.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticAnalysis.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/SemanticsTestCases.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticsTestCases.txt" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/Tree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tree.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/Workstation1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation1.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+@@ -102,7 +106,7 @@
+       <breakpoints>
+         <line-breakpoint type="java-method">
+           <url>file://$PROJECT_DIR$/src/Lexer.java</url>
+-          <line>54</line>
++          <line>56</line>
+           <properties class="Lexer" method="scan">
+             <option name="EMULATED" value="true" />
+             <option name="WATCH_EXIT" value="false" />
+Index: src/SemanticAnalysis.java
+===================================================================
+diff --git a/src/SemanticAnalysis.java b/src/SemanticAnalysis.java
+--- a/src/SemanticAnalysis.java	
++++ b/src/SemanticAnalysis.java	
+@@ -1,4 +1,6 @@
++import java.awt.*;
+ import java.util.*;
++import java.util.List;
+ 
+ public class SemanticAnalysis extends Tree{
+     private static int PROGRAM_NUMBER = 0;
+@@ -6,11 +8,12 @@
+     private static int token_pointer;
+     private static String current_token;
+     private static Tokens token = null;
+-    private static Tree myCST = new Tree();
++    private static final Tree myAST = new Tree();
+     private static int error_count = 0;
+     private static int scope_num = -1;
+     private static final ArrayList<String> list_expected_strings = new ArrayList<>();
+-    private static final ArrayList<String> symbolTableContent = new ArrayList<>();
++    private static final List<String[]> symbolTable = new ArrayList<>();
++    private static final Integer count = 0;
+ 
+     public static void main(String[] args) {
+ 
+@@ -32,7 +35,8 @@
+          */
+         //Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
+ 
+-        System.out.println("\nINFO Semantics - Analysing the semantics of program " + PROGRAM_NUMBER + " ... ");
++        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
++        System.out.println("INFO Semantics - Analysing the semantics of program " + PROGRAM_NUMBER + " ... ");
+ 
+         token_pointer = 0;
+         token = tokens.get(token_pointer);
+@@ -41,14 +45,16 @@
+         /**
+          * start analysing the semantics of the source code
+          */
++        symbolTable.add(new String [] {"Name", "Type", "Scope", "Line"});
+         SemanticAnalysis mySemanticAnalysis = new SemanticAnalysis();
+         mySemanticAnalysis.parseProgram();
+         scope_num = 0;
++
++
+         /**
+          * if no errors, semantic analysis is successful
+          */
+         if (error_count == 0) {
+-            System.out.println("DEBUG Semantic Analysis - Semantic Analysis of program " + PROGRAM_NUMBER + " completed with no errors");
+ 
+             /**
+              * print the AST
+@@ -56,52 +62,31 @@
+             System.out.println("\n AST for program " + PROGRAM_NUMBER + " ...\n");
+ 
+             Tree tree = new Tree();
+-            tree.print(myCST);
++            tree.print(myAST);
+ 
+-            /**
+-             * Program Symbol Table
+-             */
+-            System.out.println("Program " + PROGRAM_NUMBER + " Symbol Table");
+-            System.out.println(" _____________________________");
+-            System.out.println("| Name, Type,    Scope, Line  |");
+-            System.out.println(" _____________________________");
+ 
+-            // Calculate the number of rows needed to store all elements
+-            int numRows = (int) Math.ceil((double) symbolTableContent.size() / 4);
++            HashMap<Integer, HashMap<String, String>> symbolTables = new HashMap<Integer, HashMap<String, String>>();
++            Node root = myAST.root;
++            tree.depthFirstInOrder(root, 0, symbolTables);
+ 
+-            // Initialize the 2D array
+-            String[][] symbolTableArray = new String[numRows][4];
++            myAST.clear();
+ 
+-            // Fill the array with the contents of the ArrayList
+-            int index = 0;
+-            for (int i = 0; i < numRows; i++) {
+-                for (int j = 0; j < 4; j++) {
+-                    if (index < symbolTableContent.size()) {
+-                        symbolTableArray[i][j] = symbolTableContent.get(index++);
+-                    } else {
+-                        // If there are no more elements in the ArrayList,
+-                        // fill the remaining cells with an empty string
+-                        symbolTableArray[i][j] = "";
+-                    }
+-                }
++            // Program Symbol Table
++
++            System.out.println("Symbol Table for program " + PROGRAM_NUMBER + " ...");
++            System.out.println(" ----------------------------------------------------------------------");
++            for (String[] row : symbolTable) {
++                System.out.printf("| %-20s %-20s %-20s %-5s |%n",row[0], row[1], row[2],row[3]);
++                System.out.println(" ----------------------------------------------------------------------");
+             }
+ 
+-            for (String[] strings : symbolTableArray) {
+-                System.out.print("| ");
+-                for (String string : strings) {
+-                    if (string.contains("string")) {
+-                        System.out.print(string + "  ");
+-                    } else {
+-                        System.out.print(string + "  ");
+-                    }
+-
+-                }
+-                System.out.print("|");
+-                System.out.println();
+-            }
+-            System.out.println(" _____________________________ ");
+-
+-
++            System.out.println("\nDEBUG Semantic Analysis - Semantic Analysis of program " + PROGRAM_NUMBER + " completed with no errors");
++            symbolTable.clear();
++            scope_num = -1;
++        } else {
++            System.out.println("\nINFO Semantic Analysis - Semantic Analysis of program " + PROGRAM_NUMBER + " completed with "+ error_count +" error(s)");
++            System.out.println("\nINFO AST skipped due to Semantic Analysis error(s)");
++            System.out.println("\nINFO Symbol Table skipped due to Semantic Analysis error(s)");
+         }
+ 
+ 
+@@ -115,54 +100,59 @@
+         if (Objects.equals(current_token, expected_token)) {
+ 
+             if (Objects.equals(current_token, "LEFT_BRACE")) {
+-                scope_num++;
+-            }
++                    scope_num++;
++            } else if (Objects.equals(current_token, "IF") || Objects.equals(current_token, "WHILE")) {
++
++                    // Re-ordering tokens that are out of order
++                    myAST.addNode(Lexer.tokens.get(token_pointer + 3).getLexemeName(), "branch");
++
++
++            } else if (Objects.equals(current_token, "RIGHT_PAREN") &&
++                    (Objects.equals(Lexer.tokens.get(token_pointer-5).getLexemeName(), "IF")
++                            || Objects.equals(Lexer.tokens.get(token_pointer-5).getLexemeName(), "WHILE"))) {
++
++                    // Checked! this is allowing block to be the second child of IF or WHILE Statement
++                    myAST.moveUp();
++            }  else {
++
++                    // Start adding leaf nodes after all rearrangements
++                    Set<String> exceptionTokens =
++                            new HashSet<>(Arrays.asList("LEFT_BRACE", "RIGHT_BRACE", "LEFT_PAREN", "RIGHT_PAREN",
++                                    "ASSIGN", "PRINT", "EQUAL_TO_OP", "NOT_EQUAL_TO_OP"));
+ 
+-            if (Objects.equals(current_token, "INT")) {
+-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " + token.getSymbol(),
+-                        "    " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
+-            } else if (Objects.equals(current_token, "BOOLEAN")) {
+-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
+-                        String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
++                    if (!exceptionTokens.contains(current_token)) {
++                            myAST.addNode(token.getSymbol() , "leaf");
+ 
+-            } else if (Objects.equals(current_token, "STRING")) {
+-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
+-                        " " + String.valueOf(scope_num) , "    " + String.valueOf(token.getLineNum()) + "   "));
++                            if (Objects.equals(current_token, "INT")
++                                    || Objects.equals(current_token, "STRING")
++                                    || Objects.equals(current_token, "BOOLEAN")) {
+ 
+-            }
+-            //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
++                                // Build the symbolTable here
++                                symbolTable.add(new String[]{
++                                        Lexer.tokens.get(token_pointer+1).getSymbol(),
++                                        current_token,
++                                        String.valueOf(scope_num),
++                                        String.valueOf(token.getLineNum())});
++                            }
++                    }
+ 
+-            if (!Objects.equals(current_token, "LEFT_BRACE")
+-            || !Objects.equals(current_token, "RIGHT_BRACE")
+-            || !Objects.equals(current_token, "LEFT_PAREN")
+-            || !Objects.equals(current_token, "RIGHT_PAREN")
+-            || !Objects.equals(current_token, "ASSIGN")) {
+-                // do nothing
+-                myCST.addNode(token.getSymbol(), "leaf"); // leaf, expected_token
+-            }
+-            token_pointer++;
+-
+-            if (token_pointer < Lexer.tokens.size()) {
+-                token = Lexer.tokens.get(token_pointer);
+-                current_token = Lexer.tokens.get(token_pointer).getLexemeName();
+-            }
+-            // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
+-
+-        } else {
+-            error_count++;
+-            //System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
++                }
++        }
++
++        token_pointer++;
++        if (token_pointer < Lexer.tokens.size()) {
++            token = Lexer.tokens.get(token_pointer);
++            current_token = Lexer.tokens.get(token_pointer).getLexemeName();
+         }
+     }
++
+ 
+     /**
+      * Procedure to parse Program
+      */
+     public void parseProgram() {
+-        myCST.addNode("program", "root" );
+-
+         parseBlock();
+ 
+-        //myCST.moveUp();
+         /**
+          * EOP is not part of the program unless it is separating two programs
+          */
+@@ -173,13 +163,15 @@
+      * Procedure to parse Block
+      */
+     public void parseBlock() {
+-        myCST.addNode("Block", "branch");
++        myAST.addNode("Block" , "root");
+ 
+-        this.match(current_token, "LEFT_BRACE");
++        match(current_token, "LEFT_BRACE");
+         parseStatementList();
+         match(current_token, "RIGHT_BRACE");
+ 
+-        myCST.moveUp();
++        if (token_pointer < Lexer.tokens.size() - 1) {
++            myAST.moveUp();
++        }
+     }
+ 
+     /**
+@@ -199,10 +191,6 @@
+ 
+     public void parseStatement() {
+ 
+-        list_expected_strings.clear();
+-        list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
+-
+-
+         if (Objects.equals(current_token, "PRINT")) {
+             parsePrintStatement();
+         } else if (Objects.equals(current_token, "ID")) {
+@@ -217,66 +205,62 @@
+             parseIfStatement();
+         } else if (Objects.equals(current_token, "LEFT_BRACE")) {
+             parseBlock();
+-        } else {
+-            error(list_expected_strings);
+         }
+ 
+     }
+ 
+     public void parsePrintStatement() {
+-        myCST.addNode("Print Statement", "branch");
++        myAST.addNode("Print Statement", "branch");
+ 
+         match(current_token, "PRINT");
+         match(current_token, "LEFT_PAREN");
+          parseExpr();
+         match(current_token, "RIGHT_PAREN");
+ 
+-        myCST.moveUp();
++        myAST.moveUp();
+     }
+ 
+     public void parseAssignmentStatement() {
+-        myCST.addNode("Assignment Statement", "branch");
++        myAST.addNode("Assignment Statement", "branch");
+ 
+         parseId();
+         match(current_token, "ASSIGN");
+         parseExpr();
+ 
+-        myCST.moveUp();
++        myAST.moveUp();
+     }
+ 
+     public void parseVarDecl() {
+-        myCST.addNode("Variable Declaration", "branch");
++        myAST.addNode("Variable Declaration", "branch");
+ 
+         parseType();
+         parseId();
+ 
+-        myCST.moveUp();
++        myAST.moveUp();
+     }
+ 
+     public void parseWhileStatement() {
+-        myCST.addNode("While Statement", "branch");
++        myAST.addNode("While Statement", "branch");
+ 
+         match(current_token, "WHILE");
+         parseBooleanExpr();
+         parseBlock();
+ 
+-        myCST.moveUp();
++        myAST.moveUp();
+     }
+ 
+     public void parseIfStatement() {
+-        myCST.addNode("If Statement", "branch");
++        myAST.addNode("If Statement", "branch");
+ 
+         match(current_token, "IF");
+         parseBooleanExpr();
+         parseBlock();
+ 
+-        myCST.moveUp();
++        myAST.moveUp();
+     }
+ 
+     public void parseExpr() {
+ 
+-        list_expected_strings.clear();
+-        list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
+ 
+         if (Objects.equals(current_token, "DIGIT")) {
+             parseIntExpr();
+@@ -288,8 +272,6 @@
+             parseBooleanExpr();
+         } else if (Objects.equals(current_token, "ID")) {
+             parseId();
+-        } else {
+-            error(list_expected_strings);
+         }
+ 
+     }
+@@ -328,39 +310,17 @@
+     public void parseId() {
+ 
+         match(current_token, "ID");
+-        Tokens tok = Lexer.tokens.get(token_pointer-1);
+-        String symbol = "";
+-        String name = "";
+-        symbol = tok.getSymbol();
+-        name = tok.getLexemeName();
+-        if (Objects.equals(name, "ID")) {
+-            if (!Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "INT")
+-                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "STRING")
+-                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "BOOLEAN")) {
+-                if (symbolTableContent.contains(symbol)) {
+-                    if (Objects.equals(String.valueOf(scope_num), (symbolTableContent.get(symbolTableContent.indexOf(symbol) + 2)).trim())) {
+-                        System.out.println("variable [ " + symbol + " ] is declared");
+-                    } else {
+-                        System.out.println("Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
+-                    }
+-                }
+-            }
+-        }
++
+     }
+ 
+     public void parseType() {
+ 
+-        list_expected_strings.clear();
+-        list_expected_strings.addAll(Arrays.asList("INT", "STRING", "BOOLEAN"));
+-
+         if (Objects.equals(current_token, "INT")) {
+             match(current_token, "INT");
+         } else if (Objects.equals(current_token, "STRING")) {
+             match(current_token, "STRING");
+         } else if (Objects.equals(current_token, "BOOLEAN")) {
+             match(current_token, "BOOLEAN");
+-        } else {
+-            error(list_expected_strings);
+         }
+ 
+     }
+@@ -377,26 +337,17 @@
+ 
+     public void parseBoolVal() {
+ 
+-        list_expected_strings.clear();
+-        list_expected_strings.addAll(Arrays.asList("False", "TRUE"));
+-
+         if (Objects.equals(current_token, "FALSE")) {
+             match(current_token, "FALSE");
+         } else if (Objects.equals(current_token, "TRUE")) {
+             match(current_token, "TRUE");
+-        } else {
+-            error(list_expected_strings);
+         }
+-
+     }
+ 
+     public void parseIntOp() {
+-        // TODO does IntOp need to be on the AST
+-        //myCST.addNode("IntOp", "branch");
+ 
+         match(current_token, "PLUS");
+ 
+-        //myCST.moveUp();
+     }
+ 
+     public void error(ArrayList<String> list_expected_tokens) {
+@@ -407,8 +358,6 @@
+         tokens = toks;
+         PROGRAM_NUMBER = program_number;
+     }
+-    Tree tree = new Tree();
+-
+ }
+ 
+ 

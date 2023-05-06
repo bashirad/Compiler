@@ -1,0 +1,524 @@
+Index: src/Tree.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Tree.java b/src/Tree.java
+--- a/src/Tree.java	
++++ b/src/Tree.java	
+@@ -1,4 +1,6 @@
+ import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
+ 
+ public class Tree {
+     // Attributes
+@@ -13,6 +15,11 @@
+         this.cur = null;
+     }
+ 
++    //      this method clears the tree after use
++    public void clear() {
++        this.root = null;
++        this.cur = null;
++    }
+     //     public void addNode(String name, String kind, Tokens token) {
+     // Add a node: kind in {branch, leaf}.
+     public void addNode(String name, String kind) {
+@@ -38,7 +45,7 @@
+             // ... update the current node pointer to ourselves.
+             this.cur = node;
+         } else {
+-            // this.cur.setToken(token);
++            node.children = null;
+         }
+     }
+ 
+@@ -111,14 +118,12 @@
+         private void expand(Node node, int depth, StringBuilder traversalResult) {
+             // Space out based on the current depth so
+             // this looks at least a little tree-like.
+-            for (int i = 0; i < depth; i++) {
+-                traversalResult.append("-");
+-            }
++            traversalResult.append("-".repeat(Math.max(0, depth)));
+ 
+             // If there are no children (i.e., leaf nodes)...
+             if (node.getChildren() == null) {
+                 // ... note the leaf node.
+-                traversalResult.append("[").append(node.getName()).append("]");
++                traversalResult.append("[ ").append(node.getName()).append(" ]");
+                 traversalResult.append("\n");
+             } else {
+                 // There are children, so note these interior/branch nodes and ...
+@@ -129,5 +134,90 @@
+                 }
+             }
+         }
++        /**
++         * • build the symbol table (a tree of hash tables)
++         * • check scope
++         * • check type
++         */
++        /*public void depthFirstInOrder0(Node node, int scopeLevel, HashMap<Integer, HashMap<String, String>> symbolTables) {
++            if (node == null) {
++                return;
++            }
++
++            // Visit left child
++            depthFirstInOrder(node.getChildren() == null ? null : node.getChildren().get(0), scopeLevel, symbolTables);
++
++            // Add the node to the symbol table if it is a variable declaration
++            if (node.getKind().equals("leaf") && node.getParent().getKind().equals("branch") && node.getParent().getName().equals("var")) {
++                String variableName = node.getName();
++                String variableType = node.getParent().getChildren().get(0).getName();
++
++                if (!symbolTables.containsKey(scopeLevel)) {
++                    symbolTables.put(scopeLevel, new HashMap<String, String>());
++                }
++                symbolTables.get(scopeLevel).put(variableName, variableType);
++            }
++
++            // Visit right child
++            depthFirstInOrder(node.getChildren() == null || node.getChildren().size() < 2 ? null : node.getChildren().get(1), scopeLevel, symbolTables);
++
++            // Update scope level
++            if (node.getName().equals("{")) {
++                scopeLevel++;
++            }
++        }*/
++
++        public  void depthFirstInOrder(Node node, int scopeLevel, HashMap<Integer, HashMap<String, String>> symbolTables) {
++            // If the node is a variable declaration, add it to the symbol table for the current scope level.
++            if (node.getKind().equals("branch") && node.getName().equals("Variable Declaration")) {
++                HashMap<String, String> symbolTable = symbolTables.get(scopeLevel);
++                String name = node.getChildren().get(0).getName();
++                String type = node.getChildren().get(1).getName();
++                symbolTable.put(name, type);
++            }
++            // If the node is an assignment statement, check if the variable can be assigned the given value.
++            else if (node.getKind().equals("branch") && node.getName().equals("Assignment Statement")) {
++                Node left = node.getChildren().get(0);
++                Node right = node.getChildren().get(1);
++
++                String name = left.getParent().getName();
++                HashMap<String, String> symbolTable = symbolTables.get(scopeLevel);
++                if (symbolTable.containsKey(name)) {
++                    String type = symbolTable.get(name);
++                    if (type.equals("int") && right.getName().equals("NUMBER")) {
++                        // OK
++                    } else if (type.equals("string") && right.getName().equals("STRING")) {
++                        // OK
++                    } else if (type.equals("boolean") && (right.getName().equals("TRUE") || right.getName().equals("FALSE"))) {
++                        // OK
++                    } else {
++                        System.out.println("ERROR: Invalid assignment for variable " + name + " in scope " + scopeLevel);
++                    }
++                } else {
++                    System.out.println("ERROR: Variable " + name + " not declared in scope " + scopeLevel);
++                }
++
++            }
++
++            // Recursively call the method on the node's children.
++            if (node.getChildren() != null) {
++                for (Node child : node.getChildren()) {
++                    depthFirstInOrder(child, scopeLevel, symbolTables);
++                    if (child.getName().equals("BLOCK")) {
++                        scopeLevel++;
++                        symbolTables.put(scopeLevel, new HashMap<String, String>());
++                    } else if (child.getName().equals("}")) {
++                        symbolTables.remove(scopeLevel);
++                        scopeLevel--;
++                    }
++                }
++            }
++        }
++
++
++
++
++
++
+ }
+ 
+Index: src/Workstation1.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Workstation1.java b/src/Workstation1.java
+--- a/src/Workstation1.java	
++++ b/src/Workstation1.java	
+@@ -1,47 +1,188 @@
+-import java.util.ArrayList;
+-import java.util.List;
+-
+ public class Workstation1 {
+-    private Node root;
+-    private Node current;
++    /**public void match(String cur_tok, String expected_token) {
++
++        if (Objects.equals(current_token, expected_token)) {
++
++            if (Objects.equals(current_token, "LEFT_BRACE")) {
++                scope_num++;
++            }
++
++            if (Objects.equals(current_token, "INT")) {
++                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer + 1).getSymbol(), "   " + token.getSymbol(),
++                        "    " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum()) + "   "));
++            } else if (Objects.equals(current_token, "BOOLEAN")) {
++                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer + 1).getSymbol(), "   " + token.getSymbol(),
++                        String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum()) + "   "));
++
++            } else if (Objects.equals(current_token, "STRING")) {
++                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer + 1).getSymbol(), "   " + token.getSymbol(),
++                        " " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum()) + "   "));
++
++            }
++            //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
++
++            // TODO I don't know what is considered to be a leaf node; why exclude only these five {, }, (, ), and =
++            if (!Objects.equals(current_token, "RIGHT_BRACE") // !Objects.equals(current_token, "LEFT_BRACE")
++                    && !Objects.equals(current_token, "LEFT_PAREN")
++                    && !Objects.equals(current_token, "ASSIGN")
++                    && !Objects.equals(current_token, "PRINT")
++            ) {
++
++                if (Objects.equals(current_token, "IF") || Objects.equals(current_token, "WHILE")) {
++
++                    myAST.addNode(Lexer.tokens.get(token_pointer + 2).getLexemeName(), "branch");
++
++
++                    //myAST.addNode(Lexer.tokens.get(token_pointer + 2).getLexemeName(), "branch");
++
++
++
++                    myAST.addNode(Lexer.tokens.get(token_pointer+3).getSymbol(), "leaf");
++                    //token_pointer = token_pointer + 4;
++                } else if (Objects.equals(current_token, "RIGHT_PAREN")) {
++                    System.out.println("mmm Found where to do myAST.moveUp(); " + Lexer.tokens.get(token_pointer - 5).getLexemeName());
+ 
+-    public Workstation1() {
+-        this.root = null;
+-        this.current = null;
+-    }
++                    if (Objects.equals(Lexer.tokens.get(token_pointer - 5).getLexemeName(), "IF")) {
++
++                        System.out.println("Found where to do myAST.moveUp(); " + Lexer.tokens.get(token_pointer - 5).getLexemeName());
++                        myAST.moveUp();
++                    }
++                    // do nothing for now
++                } else {
++                    if (!Objects.equals(current_token, "LEFT_BRACE") && !Objects.equals(current_token, "RIGHT_PAREN")) {
++                        myAST.addNode(token.getSymbol(), "leaf"); // leaf, expected_token
++                        token_pointer++;
++                    }
++                }
+ 
+-    public void addNode(String kind, String label, Tokens token) {
+-        Node n = new Node();
+-        n.name = label;
+-        if (this.root == null) {
+-            this.root = n;
+-            n.parent = null;
+-        } else {
+-            n.parent = current;
+-            current.children.add(n);
++                int done = 0;
++                if (Objects.equals(Lexer.tokens.get(token_pointer - 2).getLexemeName(), "IF")
++                        || Objects.equals(Lexer.tokens.get(token_pointer - 2).getLexemeName(), "WHILE")
++                ) {
++                    myAST.addNode(Lexer.tokens.get(token_pointer + 1).getSymbol() + " 1. added ", "branch");
++                    myAST.addNode(token.getSymbol() + " 2. added ", "leaf"); // leaf, expected_token
++                    done = 1;
++
++                }
++
++                if (token_pointer < Lexer.tokens.size()) {
++                    token = Lexer.tokens.get(token_pointer);
++                    current_token = Lexer.tokens.get(token_pointer).getLexemeName();
++                }
++                // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
++                token_pointer++;
++            } else {
++                error_count++;
++                System.out.println("Error found here at the end of match()");
++                System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
++            }
+         }
+-        if (!kind.equals("leaf")) {
+-            this.current = n;
+-        } else {
+-            n.token = token;
+-        }
+-    }
++
++    }*/
++
++                /*System.out.println("Program " + PROGRAM_NUMBER + " Symbol Table");
++            System.out.println(" _____________________________");
++            System.out.println("| Name, Type,    Scope, Line  |");
++            System.out.println(" _____________________________");
++
++            // Calculate the number of rows needed to store all elements
++            int numRows = (int) Math.ceil((double) symbolTableContent.size() / 4);
++
++            // Initialize the 2D array
++            String[][] symbolTableArray = new String[numRows][4];
++
++            // Fill the array with the contents of the ArrayList
++            int index = 0;
++            for (int i = 0; i < numRows; i++) {
++                for (int j = 0; j < 4; j++) {
++                    if (index < symbolTableContent.size()) {
++                        symbolTableArray[i][j] = symbolTableContent.get(index++);
++                    } else {
++                        // If there are no more elements in the ArrayList,
++                        // fill the remaining cells with an empty string
++                        symbolTableArray[i][j] = "";
++                    }
++                }
++            }
++            /**
++             * Scope checking identifiers
++             */
++            /*for (String[] strings : symbolTableArray) {
++                System.out.print("| ");
++                for (String string : strings) {
++                    if (string.contains("string")) {
++                        System.out.print(string + "  ");
++                    } else {
++                        System.out.print(string + "  ");
++                    }
++
++                }
++                System.out.print("|");
++                System.out.println();
++            }
+ 
+-    public void moveUp() {
+-        this.current = this.current.parent;
+-    }
++            if (symbolTableContent.isEmpty()) {
++                System.out.println("|   No variables were used    |\n|   in this program so far    |");
++            }
++            System.out.println(" _____________________________ ");*/
++
+ 
+-    private static class Node {
+-        private String name;
+-        private Node parent;
+-        private Tokens token;
+-        private List<Node> children;
+ 
+-        public Node() {
+-            this.name = "";
+-            this.parent = null;
+-            this.children = new ArrayList<>();
+-            this.token = null;
+-        }
+-    }
++    /**Tokens tok = Lexer.tokens.get(token_pointer-1);
++     String symbol = "";
++     String name = "";
++     symbol = tok.getSymbol();
++     name = tok.getLexemeName();
++     if (Objects.equals(name, "ID")) {
++     if (Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "INT")
++     || Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "STRING")
++     || Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "BOOLEAN")) {
++     // TODO write code here
++
++     } else {
++     if (symbolTableContent.contains(symbol)) {
++     if (!Objects.equals(String.valueOf(scope_num), (symbolTableContent.get(symbolTableContent.indexOf(symbol) + 2)).trim())) {
++     error_count++;
++     System.out.println("\nERROR Semantic Analysis - Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
++
++     }
++     }
++     }
++     if (!symbolTableContent.contains(symbol)) {
++     error_count++;
++     System.out.println("\nERROR Semantic Analysis - Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
++     }
++     /**
++     * Type checking for identifiers
++     */
++    /**if (Objects.equals(Lexer.tokens.get(token_pointer), "ASSIGN")) {
++     //Lexer.tokens.get(token_pointer+1).getSymbol() instanceof Boolean) {
++
++     //}
++     }
++     }*/
++    /*Tokens tok = Lexer.tokens.get(token_pointer-1);
++    String symbol = "";
++    symbol = tok.getSymbol();
++
++    System.out.println(Lexer.tokens.get(token_pointer-2).getLexemeName() );
++    String target = symbol;
++    int occurrences = 0;
++
++    for (int i = 0; i < symbolTableContent.size(); i++) {
++        String s = symbolTableContent.get(i);
++
++        if (s.equals(target) && occurrences < 2 && i + 2 < symbolTableContent.size()) {
++            String nextNext = symbolTableContent.get(i + 2).trim();
++
++            try {
++                int number = Integer.parseInt(nextNext);
++                System.out.println("Found " + target + " at index " + i + " with next next integer: " + number);
++            } catch (NumberFormatException e) {
++                System.out.println("Found " + target + " at index " + i + " but next next element is not an integer.");
++            }
++
++            occurrences++;
++        }
++    }*/
+ }
+Index: src/Lexer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Lexer.java b/src/Lexer.java
+--- a/src/Lexer.java	
++++ b/src/Lexer.java	
+@@ -28,7 +28,8 @@
+     }
+     public static void init_Lexer( String path) {
+ 
+-        System.out.println("\nINFO Lexer   -  Lexing program " + PROGRAM_NUMBER + " ... ");
++        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
++        System.out.println("INFO Lexer   -  Lexing program " + PROGRAM_NUMBER + " ... ");
+ 
+         /**
+          * Start lexing the source code
+@@ -42,7 +43,8 @@
+      */
+     public static List<Tokens> passTokens (String path) {
+ 
+-        System.out.println("\nINFO Lexer   -  Lexing program " + 1 + " ... ");
++        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
++        System.out.println("INFO Lexer   -  Lexing program " + 1 + " ... ");
+ 
+         scan(path);
+ 
+@@ -236,6 +238,7 @@
+                                 Parser.getTokens(PROGRAM_NUMBER, tokens);
+ 
+                                 Parser.init_Parser();
++
+                             } else {
+                                 System.out.println("INFO Parser  - Lexing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+ 
+@@ -250,7 +253,11 @@
+                                 break;
+                             } else {
+                                 PROGRAM_NUMBER++;
+-                                System.out.println("\n\nINFO Lexer   -   Lexing program " + PROGRAM_NUMBER + " ... ");
++                                System.out.println("************************************************************" +
++                                        "***************************************************************************" +
++                                        "************************************\n ");
++                                System.out.println("INFO Lexer   -   Lexing program " + PROGRAM_NUMBER + " ... ");
++                                tokens.clear();
+                             }
+                         } else if (Objects.equals(getSymbolName(tokenSymbol), "ASTERISK")) {
+                             error_count++;
+Index: src/Parser.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Parser.java b/src/Parser.java
+--- a/src/Parser.java	
++++ b/src/Parser.java	
+@@ -26,18 +26,19 @@
+          */
+         //Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
+ 
+-        System.out.println("\nINFO Parser  -  Parsing program " + PROGRAM_NUMBER + " ... ");
++        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
++
++        System.out.println("INFO Parser  -  Parsing program " + PROGRAM_NUMBER + " ... ");
+ 
+         token_pointer = 0;
+         token = tokens.get(token_pointer);
+         current_token = token.getLexemeName();
+ 
+-        System.out.println("INFO Parser  -  init_Parser()");
+ 
+         /**
+          * start parsing the source code
+          */
+-        System.out.println("INFO Parser  -  parseProgram()");
++        System.out.println("\nINFO Parser  -  parseProgram()");
+         Parser myParser = new Parser();
+         myParser.parseProgram();
+ 
+@@ -45,7 +46,7 @@
+          * if no errors, parsing is successful
+          */
+         if (error_count == 0) {
+-            System.out.println("INFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
++            System.out.println("\nINFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+ 
+             /**
+              * print the CST
+@@ -55,6 +56,7 @@
+             Tree tree = new Tree();
+             //tree.print(myCST);
+ 
++            myCST.clear();
+             /**
+              * Call the Semantic Analysis
+              */
+@@ -63,7 +65,7 @@
+ 
+ 
+         } else {
+-            System.out.println("INFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
++            System.out.println("\nINFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+ 
+             System.out.println("\nCST for program " + PROGRAM_NUMBER + " skipped due to Parser ERROR");
+ 
+@@ -118,7 +120,6 @@
+ 
+         match(current_token, "LEFT_BRACE");
+ 
+-        System.out.println("INFO Parser  -  parseBlock()");
+         parseStatementList();
+ 
+         match(current_token, "RIGHT_BRACE");
+Index: .idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM__Changes_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM__Changes_.xml	
++++ /dev/null	
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM_[Changes]" date="1682194506045" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_14_PM_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 4/22/2023 3:14 PM [Changes]" />
+-</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM__Changes_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM__Changes_.xml	
++++ /dev/null	
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM_[Changes]" date="1682194382342" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_4_22_2023_3_12_PM_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 4/22/2023 3:12 PM [Changes]" />
+-</changelist>
+\ No newline at end of file

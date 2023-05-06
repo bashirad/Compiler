@@ -8,7 +8,9 @@ public class SemanticAnalysis extends Tree{
     private static Tokens token = null;
     private static Tree myCST = new Tree();
     private static int error_count = 0;
+    private static int scope_num = -1;
     private static final ArrayList<String> list_expected_strings = new ArrayList<>();
+    private static final ArrayList<String> symbolTableContent = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -30,21 +32,18 @@ public class SemanticAnalysis extends Tree{
          */
         //Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
 
-        System.out.println("\nINFO Parser - Parsing program " + PROGRAM_NUMBER + " ... ");
+        System.out.println("\nINFO Semantics - Analysing the semantics of program " + PROGRAM_NUMBER + " ... ");
 
         token_pointer = 0;
         token = tokens.get(token_pointer);
         current_token = token.getLexemeName();
 
-        System.out.println("Parser: init_Parser()");
-
         /**
          * start analysing the semantics of the source code
          */
-        System.out.println("Semantics: parseProgram()");
         SemanticAnalysis mySemanticAnalysis = new SemanticAnalysis();
         mySemanticAnalysis.parseProgram();
-
+        scope_num = 0;
         /**
          * if no errors, semantic analysis is successful
          */
@@ -52,7 +51,7 @@ public class SemanticAnalysis extends Tree{
             System.out.println("DEBUG Semantic Analysis - Semantic Analysis of program " + PROGRAM_NUMBER + " completed with no errors");
 
             /**
-             * print the CST
+             * print the AST
              */
             System.out.println("\n AST for program " + PROGRAM_NUMBER + " ...\n");
 
@@ -60,8 +59,48 @@ public class SemanticAnalysis extends Tree{
             tree.print(myCST);
 
             /**
-             * pass the CST to the Semantics Analysis
+             * Program Symbol Table
              */
+            System.out.println("Program " + PROGRAM_NUMBER + " Symbol Table");
+            System.out.println(" _____________________________");
+            System.out.println("| Name, Type,    Scope, Line  |");
+            System.out.println(" _____________________________");
+
+            // Calculate the number of rows needed to store all elements
+            int numRows = (int) Math.ceil((double) symbolTableContent.size() / 4);
+
+            // Initialize the 2D array
+            String[][] symbolTableArray = new String[numRows][4];
+
+            // Fill the array with the contents of the ArrayList
+            int index = 0;
+            for (int i = 0; i < numRows; i++) {
+                for (int j = 0; j < 4; j++) {
+                    if (index < symbolTableContent.size()) {
+                        symbolTableArray[i][j] = symbolTableContent.get(index++);
+                    } else {
+                        // If there are no more elements in the ArrayList,
+                        // fill the remaining cells with an empty string
+                        symbolTableArray[i][j] = "";
+                    }
+                }
+            }
+
+            for (String[] strings : symbolTableArray) {
+                System.out.print("| ");
+                for (String string : strings) {
+                    if (string.contains("string")) {
+                        System.out.print(string + "  ");
+                    } else {
+                        System.out.print(string + "  ");
+                    }
+
+                }
+                System.out.print("|");
+                System.out.println();
+            }
+            System.out.println(" _____________________________ ");
+
 
         }
 
@@ -75,6 +114,22 @@ public class SemanticAnalysis extends Tree{
 
         if (Objects.equals(current_token, expected_token)) {
 
+            if (Objects.equals(current_token, "LEFT_BRACE")) {
+                scope_num++;
+            }
+
+            if (Objects.equals(current_token, "INT")) {
+                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " + token.getSymbol(),
+                        "    " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
+            } else if (Objects.equals(current_token, "BOOLEAN")) {
+                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
+                        String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
+
+            } else if (Objects.equals(current_token, "STRING")) {
+                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
+                        " " + String.valueOf(scope_num) , "    " + String.valueOf(token.getLineNum()) + "   "));
+
+            }
             //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
 
             if (!Objects.equals(current_token, "LEFT_BRACE")
@@ -105,7 +160,6 @@ public class SemanticAnalysis extends Tree{
     public void parseProgram() {
         myCST.addNode("program", "root" );
 
-        System.out.println("Parser: parseBlock()");
         parseBlock();
 
         //myCST.moveUp();
@@ -137,9 +191,7 @@ public class SemanticAnalysis extends Tree{
                 new HashSet<>(Arrays.asList("PRINT", "ID", "INT", "STRING", "BOOLEAN", "WHILE", "IF", "LEFT_BRACE"));
 
         if (validTokens.contains(current_token)) {
-            System.out.println("Parser: parseStatement()");
             parseStatement();
-            System.out.println("Parser: parseStatementList()");
             parseStatementList();
         }
 
@@ -152,24 +204,18 @@ public class SemanticAnalysis extends Tree{
 
 
         if (Objects.equals(current_token, "PRINT")) {
-            System.out.println("Parser: parsePrintStatement()");
             parsePrintStatement();
         } else if (Objects.equals(current_token, "ID")) {
-            System.out.println("Parser: parseAssignmentStatement()");
             parseAssignmentStatement();
         } else if (Objects.equals(current_token, "INT")
                 || Objects.equals(current_token, "STRING")
                 || Objects.equals(current_token, "BOOLEAN")) {
-            System.out.println("Parser: parseVarDecl()");
             parseVarDecl();
         } else if (Objects.equals(current_token, "WHILE")) {
-            System.out.println("Parser: parseWhileStatement()");
             parseWhileStatement();
         } else if (Objects.equals(current_token, "IF")) {
-            System.out.println("Parser: parseIfStatement()");
             parseIfStatement();
         } else if (Objects.equals(current_token, "LEFT_BRACE")) {
-            System.out.println("Parser: parseBlock()");
             parseBlock();
         } else {
             error(list_expected_strings);
@@ -182,8 +228,7 @@ public class SemanticAnalysis extends Tree{
 
         match(current_token, "PRINT");
         match(current_token, "LEFT_PAREN");
-        System.out.println("Parser: parseExpr()");
-        parseExpr();
+         parseExpr();
         match(current_token, "RIGHT_PAREN");
 
         myCST.moveUp();
@@ -192,10 +237,8 @@ public class SemanticAnalysis extends Tree{
     public void parseAssignmentStatement() {
         myCST.addNode("Assignment Statement", "branch");
 
-        System.out.println("Parser: parseId()");
         parseId();
         match(current_token, "ASSIGN");
-        System.out.println("Parser: parseExpr()");
         parseExpr();
 
         myCST.moveUp();
@@ -204,10 +247,7 @@ public class SemanticAnalysis extends Tree{
     public void parseVarDecl() {
         myCST.addNode("Variable Declaration", "branch");
 
-
-        System.out.println("Parser: parseType()");
         parseType();
-        System.out.println("Parser: parseId()");
         parseId();
 
         myCST.moveUp();
@@ -216,11 +256,8 @@ public class SemanticAnalysis extends Tree{
     public void parseWhileStatement() {
         myCST.addNode("While Statement", "branch");
 
-
         match(current_token, "WHILE");
-        System.out.println("Parser: parseBooleanExpr()");
         parseBooleanExpr();
-        System.out.println("Parser: parseBlock()");
         parseBlock();
 
         myCST.moveUp();
@@ -229,11 +266,8 @@ public class SemanticAnalysis extends Tree{
     public void parseIfStatement() {
         myCST.addNode("If Statement", "branch");
 
-
         match(current_token, "IF");
-        System.out.println("Parser: parseBooleanExpr()");
         parseBooleanExpr();
-        System.out.println("Parser: parseBlock()");
         parseBlock();
 
         myCST.moveUp();
@@ -245,21 +279,16 @@ public class SemanticAnalysis extends Tree{
         list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
 
         if (Objects.equals(current_token, "DIGIT")) {
-            System.out.println("Parser: parseIntExpr()");
             parseIntExpr();
-        } else if (Objects.equals(current_token, "STRING")) {
-            System.out.println("Parser: parseStringExpr()");
+        } else if (Objects.equals(current_token, "CHAR_LIST")) {
             parseStringExpr();
         } else if (Objects.equals(current_token, "LEFT_PAREN")
                 || Objects.equals(current_token, "TRUE")
                 || Objects.equals(current_token, "FALSE")) {
-            System.out.println("Parser: parseBooleanExpr()");
             parseBooleanExpr();
         } else if (Objects.equals(current_token, "ID")) {
-            System.out.println("Parser: parseId()");
             parseId();
         } else {
-            System.out.println("Parser: error()");
             error(list_expected_strings);
         }
 
@@ -269,9 +298,7 @@ public class SemanticAnalysis extends Tree{
 
         match(current_token, "DIGIT");
         if (Objects.equals(current_token, "PLUS")) {
-            System.out.println("Parser: parseIntOp()");
             parseIntOp();
-            System.out.println("Parser: parseExpr()");
             parseExpr();
         }
 
@@ -279,8 +306,7 @@ public class SemanticAnalysis extends Tree{
 
     public void parseStringExpr() {
 
-        System.out.println("Parser: parseStringExpr()");
-        match(current_token, "STRING");
+        match(current_token, "CHAR_LIST");
 
     }
 
@@ -288,15 +314,11 @@ public class SemanticAnalysis extends Tree{
 
         if (Objects.equals(current_token, "FALSE")
                 || Objects.equals(current_token, "TRUE")) {
-            System.out.println("Parser: parseBoolVal()");
             parseBoolVal();
         } else {
             match(current_token, "LEFT_PAREN");
-            System.out.println("Parser: parseExpr()");
             parseExpr();
-            System.out.println("Parser: parseBoolOp()");
             parseBoolOp();
-            System.out.println("Parser: parseExpr()");
             parseExpr();
             match(current_token, "RIGHT_PAREN");
         }
@@ -306,19 +328,25 @@ public class SemanticAnalysis extends Tree{
     public void parseId() {
 
         match(current_token, "ID");
-
-    }
-
-    // TODO delete this method when done as you are not separating the string into char list
-    /* public static void parseCharList(String current_token) {
-        if (current_token == "CHAR") {
-            match(current_token,"char");
-            parseCharList(current_token);
-        } else if (current_token == "WHITESPACE") {
-            match(current_token," ");
-            parseCharList(current_token);
+        Tokens tok = Lexer.tokens.get(token_pointer-1);
+        String symbol = "";
+        String name = "";
+        symbol = tok.getSymbol();
+        name = tok.getLexemeName();
+        if (Objects.equals(name, "ID")) {
+            if (!Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "INT")
+                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "STRING")
+                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "BOOLEAN")) {
+                if (symbolTableContent.contains(symbol)) {
+                    if (Objects.equals(String.valueOf(scope_num), (symbolTableContent.get(symbolTableContent.indexOf(symbol) + 2)).trim())) {
+                        System.out.println("variable [ " + symbol + " ] is declared");
+                    } else {
+                        System.out.println("Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
+                    }
+                }
+            }
         }
-    }*/
+    }
 
     public void parseType() {
 
@@ -332,7 +360,6 @@ public class SemanticAnalysis extends Tree{
         } else if (Objects.equals(current_token, "BOOLEAN")) {
             match(current_token, "BOOLEAN");
         } else {
-            System.out.println("Parser: error()");
             error(list_expected_strings);
         }
 
@@ -358,13 +385,13 @@ public class SemanticAnalysis extends Tree{
         } else if (Objects.equals(current_token, "TRUE")) {
             match(current_token, "TRUE");
         } else {
-            System.out.println("Parser: error()");
             error(list_expected_strings);
         }
 
     }
 
     public void parseIntOp() {
+        // TODO does IntOp need to be on the AST
         //myCST.addNode("IntOp", "branch");
 
         match(current_token, "PLUS");
