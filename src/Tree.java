@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Tree {
     // Attributes
@@ -13,9 +14,18 @@ public class Tree {
         this.cur = null;
     }
 
+    //      this method clears the tree after use
+    public void clear() {
+        this.root = null;
+        this.cur = null;
+    }
+
+
     //     public void addNode(String name, String kind, Tokens token) {
     // Add a node: kind in {branch, leaf}.
-    public void addNode(String name, String kind) {
+    //     public void addNode(String name, String kind, Tokens token) {
+    // Add a node: kind in {branch, leaf}.
+    public void addNode(String name, String kind, Tokens token) {
         // Construct the node object.
         Node node = new Node(name, kind);
 
@@ -38,7 +48,7 @@ public class Tree {
             // ... update the current node pointer to ourselves.
             this.cur = node;
         } else {
-            // this.cur.setToken(token);
+            //this.cur.addChild(null);
         }
     }
 
@@ -52,8 +62,6 @@ public class Tree {
             System.out.println("ERROR: can't move up to the parent node");
         }
     }
-
-
     // Node class
     public class Node {
         // Attributes
@@ -61,6 +69,9 @@ public class Tree {
         private String kind;
         private ArrayList<Node> children;
         private Node parent;
+        private Tokens token;
+
+
 
         // Constructor
         public Node(String name, String kind) {
@@ -68,66 +79,94 @@ public class Tree {
             this.kind = kind;
             this.children = new ArrayList<Node>();
             this.parent = null;
+            this.token = null;
         }
 
         // Getter and Setter methods
         public String getName() {
             return this.name;
         }
+
         public String getKind() {
             return this.kind;
         }
+
         public ArrayList<Node> getChildren() {
             return this.children;
         }
+
         public Node getParent() {
             return parent;
         }
+        public Tokens getTokens() {
+            return this.token;
+        }
+
         public void addChild(Node node) {
             this.children.add(node);
         }
+
         public void setParent(Node parent) {
             this.parent = parent;
         }
+
+        public void setToken(Tokens token) {
+            this.token = token;
+        }
     }
 
-        // Return a string representation of the tree.
-        public void print(Tree cst) {
 
-            // Initialize the result string.
-            StringBuilder traversalResult = new StringBuilder();
+    // Return a string representation of the tree.
+    public void print(Tree cst) {
 
-            if (cst.root != null) {
-                // Recursive function to handle the expansion of the nodes.
-                expand(cst.root, 0, traversalResult);
+        // Initialize the result string.
+        StringBuilder traversalResult = new StringBuilder();
 
-                // Return the result.
-                System.out.println(traversalResult);
-            } else {
-                System.out.println("Root is null. I am sorry");
+        if (cst.root != null) {
+            // Recursive function to handle the expansion of the nodes.
+            expand(cst.root, 0, traversalResult);
+
+            // Return the result.
+            System.out.println(traversalResult);
+        } else {
+            System.out.println("Root is null. I am sorry");
+        }
+    }
+
+    private void expand(Node node, int depth, StringBuilder traversalResult) {
+
+        // Space out based on the current depth so
+        // this looks at least a little tree-like.
+        traversalResult.append("-".repeat(Math.max(0, depth)));
+
+        // If there are no children (i.e., leaf nodes)...
+        if (Objects.equals(node.getKind(), "leaf")) {
+            // ... note the leaf node.
+            traversalResult.append("[ ").append(node.getName()).append(" ]");
+            traversalResult.append("\n");
+        } else {
+            // There are children, so note these interior/branch nodes and ...
+            traversalResult.append("<").append(node.getName()).append("> \n");
+            // ... recursively expand them.
+            for (int i = 0; i < node.getChildren().size(); i++) {
+                expand(node.getChildren().get(i), depth + 1, traversalResult);
             }
         }
+    }
 
-        private void expand(Node node, int depth, StringBuilder traversalResult) {
-            // Space out based on the current depth so
-            // this looks at least a little tree-like.
-            for (int i = 0; i < depth; i++) {
-                traversalResult.append("-");
-            }
 
-            // If there are no children (i.e., leaf nodes)...
-            if (node.getChildren() == null) {
-                // ... note the leaf node.
-                traversalResult.append("[").append(node.getName()).append("]");
-                traversalResult.append("\n");
-            } else {
-                // There are children, so note these interior/branch nodes and ...
-                traversalResult.append("<").append(node.getName()).append("> \n");
-                // ... recursively expand them.
-                for (int i = 0; i < node.getChildren().size(); i++) {
-                    expand(node.getChildren().get(i), depth + 1, traversalResult);
-                }
-            }
-        }
+
+
 }
+
+
+    /**
+     *
+     *
+     * OLD VERSION - KEEP BEFORE IMPLEMENTING THE NEW ONE
+     * • build the symbol table (a tree of hash tables)
+     * • check scope
+     * • check type
+     */
+
 

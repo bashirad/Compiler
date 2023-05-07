@@ -2,10 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/SymbolTables.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_5_2023_9_09_AM__Changes_1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_5_2023_9_09_AM__Changes_1.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lexer.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lexer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Parser.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/SemanticAnalysis.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticAnalysis.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/SemanticsTestCases.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticsTestCases.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Tokens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokens.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Tree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Workstation1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation1.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,7 +31,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Semantic-Analysis" />
+        <entry key="$PROJECT_DIR$" value="Parser" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -102,7 +109,7 @@
       <breakpoints>
         <line-breakpoint type="java-method">
           <url>file://$PROJECT_DIR$/src/Lexer.java</url>
-          <line>54</line>
+          <line>56</line>
           <properties class="Lexer" method="scan">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />

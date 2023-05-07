@@ -28,7 +28,8 @@ public class Lexer {
     }
     public static void init_Lexer( String path) {
 
-        System.out.println("\nINFO Lexer   -  Lexing program " + PROGRAM_NUMBER + " ... ");
+        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+        System.out.println("INFO Lexer   -  Lexing program " + 1 + " ... ");
 
         /**
          * Start lexing the source code
@@ -42,7 +43,8 @@ public class Lexer {
      */
     public static List<Tokens> passTokens (String path) {
 
-        System.out.println("\nINFO Lexer   -  Lexing program " + 1 + " ... ");
+        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+        System.out.println("INFO Lexer   -  Lexing program " + 1 + " ... ");
 
         scan(path);
 
@@ -250,7 +252,13 @@ public class Lexer {
                                 break;
                             } else {
                                 PROGRAM_NUMBER++;
-                                System.out.println("\n\nINFO Lexer   -   Lexing program " + PROGRAM_NUMBER + " ... ");
+
+                                System.out.println("************************************************************" +
+                                        "***************************************************************************" +
+                                        "************************************\n ");
+                                System.out.println("INFO Lexer   -   Lexing program " + PROGRAM_NUMBER + " ... ");
+
+                                tokens.clear();
                             }
                         } else if (Objects.equals(getSymbolName(tokenSymbol), "ASTERISK")) {
                             error_count++;
