@@ -1,11 +1,8 @@
 {
-int a
-boolean b
-string c
-{
-    a = 5
-    b = false
-    c = "hello"
-}
+ int a
+ {
+ string a
+ a = "a"
+ }
 
 }$

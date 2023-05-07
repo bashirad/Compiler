@@ -1,4 +1,4 @@
-public class Tokens {
+public class Tokens extends Tree {
     String lexemeName;
     String symbol;
     int lineNum;
