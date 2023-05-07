@@ -26,7 +26,8 @@ public class Parser extends Tree{
          */
         //Lexer.init_Lexer("C:\\\\Users\\\\Bashir\\\\Documents\\\\Bashirs_Code_all\\\\Java\\\\cmpt432\\\\src\\\\code.txt");
 
-        System.out.println("\nINFO Parser  -  Parsing program " + PROGRAM_NUMBER + " ... ");
+        System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+        System.out.println("INFO Parser  -  Parsing program " + PROGRAM_NUMBER + " ... ");
 
         token_pointer = 0;
         token = tokens.get(token_pointer);
@@ -37,7 +38,7 @@ public class Parser extends Tree{
         /**
          * start parsing the source code
          */
-        System.out.println("INFO Parser  -  parseProgram()");
+        System.out.println("\nINFO Parser  -  parseProgram()");
         Parser myParser = new Parser();
         myParser.parseProgram();
 
@@ -45,7 +46,7 @@ public class Parser extends Tree{
          * if no errors, parsing is successful
          */
         if (error_count == 0) {
-            System.out.println("INFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
+            System.out.println("\nINFO Parser  -  Parsing of program " + PROGRAM_NUMBER + " completed with " + error_count + " error(s)");
 
             /**
              * print the CST
@@ -54,6 +55,7 @@ public class Parser extends Tree{
 
             Tree tree = new Tree();
             //tree.print(myCST);
+            myCST.clear();
 
             /**
              * Call the Semantic Analysis
@@ -81,7 +83,7 @@ public class Parser extends Tree{
 
             //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token + " at line " + token.getLineNum() + " position " + token.getPosNum());
 
-            myCST.addNode(token.getSymbol(), "leaf"); // leaf, expected_token
+            myCST.addNode(token.getSymbol(), "leaf", token); // leaf, expected_token
 
             token_pointer++;
 
@@ -101,9 +103,8 @@ public class Parser extends Tree{
      * Procedures to parse Program
      */
     public void parseProgram() {
-        myCST.addNode("program", "root" );
+        myCST.addNode("program", "root", token );
 
-        System.out.println("INFO Parser  -  parseBlock()");
         parseBlock();
 
         //myCST.moveUp();
@@ -114,7 +115,7 @@ public class Parser extends Tree{
     }
 
     public void parseBlock() {
-        myCST.addNode("Block", "branch");
+        myCST.addNode("Block", "branch", token);
 
         match(current_token, "LEFT_BRACE");
 
@@ -137,7 +138,7 @@ public class Parser extends Tree{
             // I printed this here because the current StatementList could be empty
             System.out.println("INFO Parser  -  parseStatementList()");
 
-            myCST.addNode("StatementList", "branch");
+            myCST.addNode("StatementList", "branch", token);
 
             System.out.println("INFO Parser  -  parseStatement()");
             parseStatement();
@@ -150,7 +151,7 @@ public class Parser extends Tree{
     }
 
     public void parseStatement() {
-        myCST.addNode("Statement", "branch");
+        myCST.addNode("Statement", "branch", token);
 
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
@@ -185,7 +186,7 @@ public class Parser extends Tree{
     }
 
     public void parsePrintStatement() {
-        myCST.addNode("PrintStatement", "branch");
+        myCST.addNode("PrintStatement", "branch", token);
 
         match(current_token, "PRINT");
         match(current_token, "LEFT_PAREN");
@@ -197,7 +198,7 @@ public class Parser extends Tree{
     }
 
     public void parseAssignmentStatement() {
-        myCST.addNode("Assignment Statement", "branch");
+        myCST.addNode("Assignment Statement", "branch", token);
 
         System.out.println("INFO Parser  -  parseId()");
         parseId();
@@ -211,7 +212,7 @@ public class Parser extends Tree{
     }
 
     public void parseVarDecl() {
-        myCST.addNode("VarDecl", "branch");
+        myCST.addNode("VarDecl", "branch", token);
 
         System.out.println("INFO Parser  -  parseType()");
         parseType();
@@ -223,7 +224,7 @@ public class Parser extends Tree{
     }
 
     public void parseWhileStatement() {
-        myCST.addNode("WhileStatement", "branch");
+        myCST.addNode("WhileStatement", "branch", token);
 
 
         match(current_token, "WHILE");
@@ -238,7 +239,7 @@ public class Parser extends Tree{
     }
 
     public void parseIfStatement() {
-        myCST.addNode("IfStatement", "branch");
+        myCST.addNode("IfStatement", "branch", token);
 
         match(current_token, "IF");
 
@@ -252,7 +253,7 @@ public class Parser extends Tree{
     }
 
     public void parseExpr() {
-        myCST.addNode("Expr", "branch");
+        myCST.addNode("Expr", "branch", token);
 
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
@@ -279,7 +280,7 @@ public class Parser extends Tree{
     }
 
     public void parseIntExpr() {
-        myCST.addNode("IntExpr", "branch");
+        myCST.addNode("IntExpr", "branch", token);
 
         match(current_token, "DIGIT");
         if (Objects.equals(current_token, "PLUS")) {
@@ -294,7 +295,7 @@ public class Parser extends Tree{
     }
 
     public void parseStringExpr() {
-        myCST.addNode("StringExpr", "branch");
+        myCST.addNode("StringExpr", "branch", token);
 
         match(current_token, "CHAR_LIST");
 
@@ -302,7 +303,7 @@ public class Parser extends Tree{
     }
 
     public void parseBooleanExpr() {
-        myCST.addNode("BooleanExpr", "branch");
+        myCST.addNode("BooleanExpr", "branch", token);
 
         if (Objects.equals(current_token, "FALSE")
                 || Objects.equals(current_token, "TRUE")) {
@@ -323,7 +324,7 @@ public class Parser extends Tree{
     }
 
     public void parseId() {
-        myCST.addNode("Id", "branch");
+        myCST.addNode("Id", "branch", token);
 
         match(current_token, "ID");
 
@@ -331,7 +332,7 @@ public class Parser extends Tree{
     }
 
     public void parseType() {
-        myCST.addNode("Type", "branch");
+        myCST.addNode("Type", "branch", token);
 
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("INT", "STRING", "BOOLEAN"));
@@ -350,7 +351,7 @@ public class Parser extends Tree{
     }
 
     public void parseBoolOp() {
-        myCST.addNode("BoolOp", "branch");
+        myCST.addNode("BoolOp", "branch", token);
 
         if (Objects.equals(current_token, "EQUAL_TO_OP")) {
             match(current_token, "EQUAL_TO_OP");
@@ -362,7 +363,7 @@ public class Parser extends Tree{
     }
 
     public void parseBoolVal() {
-        myCST.addNode("BoolVal", "branch");
+        myCST.addNode("BoolVal", "branch", token);
 
         list_expected_strings.clear();
         list_expected_strings.addAll(Arrays.asList("False", "TRUE"));
@@ -380,7 +381,7 @@ public class Parser extends Tree{
     }
 
     public void parseIntOp() {
-        myCST.addNode("IntOp", "branch");
+        myCST.addNode("IntOp", "branch", token);
 
         match(current_token, "PLUS");
 
@@ -419,6 +420,8 @@ public class Parser extends Tree{
             default -> "UNKNOWN";
         };
     }
+
+
 
 
 }

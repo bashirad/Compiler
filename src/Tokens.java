@@ -4,6 +4,7 @@ public class Tokens {
     int lineNum;
     int positionNum;
     public Tokens (String lexemeName, String symbol, int lineNum, int positionNum ) {
+        super();
 
         /** initialize variables    */
         this.lexemeName = lexemeName;

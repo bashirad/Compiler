@@ -1,12 +1,11 @@
-/*  Testing the scope for multiple variable declarations */
 {
-    int a
-    int g
-    boolean b
+int a
+boolean b
+string c
+{
+    a = 5
     b = false
-    t = 9
-    {
-    a = 0
-    }
+    c = "hello"
 }
-$
+
+}$

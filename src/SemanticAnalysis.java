@@ -6,11 +6,12 @@ public class SemanticAnalysis extends Tree{
     private static int token_pointer;
     private static String current_token;
     private static Tokens token = null;
-    private static Tree myCST = new Tree();
+    private static final Tree myAST = new Tree();
+    private static final SymbolTables symbolTable = new SymbolTables();
+
     private static int error_count = 0;
     private static int scope_num = -1;
-    private static final ArrayList<String> list_expected_strings = new ArrayList<>();
-    private static final ArrayList<String> symbolTableContent = new ArrayList<>();
+    //private static final ArrayList<String> list_expected_strings = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -56,56 +57,141 @@ public class SemanticAnalysis extends Tree{
             System.out.println("\n AST for program " + PROGRAM_NUMBER + " ...\n");
 
             Tree tree = new Tree();
-            tree.print(myCST);
+            //tree.print(myAST);
 
+            buildSymbolTable(myAST);
             /**
              * Program Symbol Table
              */
-            System.out.println("Program " + PROGRAM_NUMBER + " Symbol Table");
-            System.out.println(" _____________________________");
-            System.out.println("| Name, Type,    Scope, Line  |");
-            System.out.println(" _____________________________");
 
-            // Calculate the number of rows needed to store all elements
-            int numRows = (int) Math.ceil((double) symbolTableContent.size() / 4);
+            HashMap<Integer, HashMap<String, String>> symbolTables = new HashMap<Integer, HashMap<String, String>>();
+            //tree.depthFirstInOrder(root, 0, symbolTables);
 
-            // Initialize the 2D array
-            String[][] symbolTableArray = new String[numRows][4];
 
-            // Fill the array with the contents of the ArrayList
-            int index = 0;
-            for (int i = 0; i < numRows; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (index < symbolTableContent.size()) {
-                        symbolTableArray[i][j] = symbolTableContent.get(index++);
-                    } else {
-                        // If there are no more elements in the ArrayList,
-                        // fill the remaining cells with an empty string
-                        symbolTableArray[i][j] = "";
-                    }
-                }
-            }
+            myAST.clear();
 
-            for (String[] strings : symbolTableArray) {
-                System.out.print("| ");
-                for (String string : strings) {
-                    if (string.contains("string")) {
-                        System.out.print(string + "  ");
-                    } else {
-                        System.out.print(string + "  ");
-                    }
-
-                }
-                System.out.print("|");
-                System.out.println();
-            }
-            System.out.println(" _____________________________ ");
 
 
         }
 
 
     }
+
+    public static void buildSymbolTable(Tree myAST) {
+
+        Node root = myAST.root;
+
+        traverseAST(root);
+    }
+
+    public static void traverseAST(Node root) {
+        // We can ignore the traversalResult for now
+        StringBuilder traversalResult = new StringBuilder();
+        expandAST(root, 0, traversalResult);
+        System.out.println("This is from traverseAST method");
+        System.out.println(traversalResult);
+    }
+
+    private static void expandAST(Node node, int depth, StringBuilder traversalResult) {
+
+        String name = node.getName();
+        Node left = null;
+        Node right = null;
+
+        // Space out based on the current depth so
+        // this looks at least a little tree-like.
+        traversalResult.append("-".repeat(Math.max(0, depth)));
+
+        // If there are no children (i.e., leaf nodes)...
+        if (Objects.equals(node.getKind(), "leaf")) {
+            // ... note the leaf node.
+            traversalResult.append("[ ").append(node.getName()).append(" ]");
+            traversalResult.append("\n");
+        } else {
+
+            if (Objects.equals(name, "Block")) {
+                scope_num++;
+                // Increase scope and add a child symbol table
+                symbolTable.addChild(scope_num);
+
+            } else if (Objects.equals(name, "Variable Declaration")) {
+                left = node.getChildren().get(0);
+                right = node.getChildren().get(1);
+
+                String typeV = left.getName();
+                String nameV = right.getName();
+
+                System.out.println("Variable Declaration => left is typeV " + typeV);
+                System.out.println("Variable Declaration => right is nameV " + nameV);
+
+                // add to symbol table if not there
+
+                if (symbolTable.getSymbol(nameV) == null) {
+                    symbolTable.addSymbol(nameV, typeV);
+                    System.out.println("Variable Declaration => " + nameV + " is added to symbolTable\n");
+
+
+                } else {
+                    System.out.println("Variable " + right.getName() + " is declared more than once");
+                }
+            } else if (Objects.equals(node.getName(), "Assignment Statement")) {
+                left = node.getChildren().get(0);
+                right = node.getChildren().get(1);
+
+                String idA = left.getName();
+                String exprA = right.getName();
+
+                System.out.println("\nAssignment Statement => left idA is " + idA);
+                System.out.println("Assignment Statement => right exprA is " + exprA);
+
+                // add to symbol table if not there
+
+                if (symbolTable.getSymbol(idA) == null) {
+                    System.out.println("\nAssignment Statement => Variable " + left.getName() + " is used before it is declared");
+                } else {
+                    System.out.println("Type checking happens here");
+                    System.out.println("****************** " + symbolTable.getSymbol(idA));
+
+                    if (Objects.equals(symbolTable.getSymbol(idA), "int")) {
+                        String input = exprA;
+                        try {
+                            int number = Integer.parseInt(input);
+                            System.out.println(input + " is an integer.");
+                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                        } catch (NumberFormatException e) {
+                            System.out.println(input + " is not an integer.");
+                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                        }
+                    } else if (Objects.equals(symbolTable.getSymbol(idA), "boolean")) {
+                       // exprA has to be false or true
+                        if (Objects.equals(exprA, "true") || Objects.equals(exprA, "false")) {
+                            System.out.println(exprA + " is a boolean.");
+                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                        } else {
+                            System.out.println(exprA + " is not a boolean.");
+                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                        }
+                    } else {
+                        if (exprA.startsWith("\"") && exprA.endsWith("\"")) {
+                            System.out.println(exprA + " is a string.");
+                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                        } else {
+                            System.out.println(exprA + " is not a string.");
+                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                        }
+                    }
+                }
+            }
+
+            // There are children, so note these interior/branch nodes and ...
+            traversalResult.append("<").append(node.getName()).append("> \n");
+            // ... recursively expand them.
+            for (int i = 0; i < node.getChildren().size(); i++) {
+                expandAST(node.getChildren().get(i), depth + 1, traversalResult);
+            }
+        }
+    }
+
 
     /**
      * match method to check currentToken to the expectedToken
@@ -115,30 +201,27 @@ public class SemanticAnalysis extends Tree{
         if (Objects.equals(current_token, expected_token)) {
 
             if (Objects.equals(current_token, "LEFT_BRACE")) {
-                scope_num++;
-            }
+                //scope_num++;
+            } else if (Objects.equals(current_token, "IF") || Objects.equals(current_token, "WHILE")) {
 
-            if (Objects.equals(current_token, "INT")) {
-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " + token.getSymbol(),
-                        "    " + String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
-            } else if (Objects.equals(current_token, "BOOLEAN")) {
-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
-                        String.valueOf(scope_num), "    " + String.valueOf(token.getLineNum())+ "   "));
+                // Re-ordering tokens that are out of order
+                myAST.addNode(Lexer.tokens.get(token_pointer + 3).getLexemeName(), "branch", token);
+            } else if (Objects.equals(current_token, "RIGHT_PAREN") &&
+                    (Objects.equals(Lexer.tokens.get(token_pointer - 5).getLexemeName(), "IF")
+                            || Objects.equals(Lexer.tokens.get(token_pointer - 5).getLexemeName(), "WHILE"))
+        ) {
+                // Checked! this is allowing block to be the second child of IF or WHILE Statement
+                myAST.moveUp();
+            } else {
 
-            } else if (Objects.equals(current_token, "STRING")) {
-                symbolTableContent.addAll(Arrays.asList(Lexer.tokens.get(token_pointer+1).getSymbol(), "   " +token.getSymbol(),
-                        " " + String.valueOf(scope_num) , "    " + String.valueOf(token.getLineNum()) + "   "));
+                // Start adding leaf nodes after all rearrangements
+                Set<String> exceptionTokens =
+                        new HashSet<>(Arrays.asList("LEFT_BRACE", "RIGHT_BRACE", "LEFT_PAREN", "RIGHT_PAREN",
+                                "ASSIGN", "PRINT", "EQUAL_TO_OP", "NOT_EQUAL_TO_OP"));
 
-            }
-            //System.out.printf("DEBUG Parser - CORRECT: expected    %-14s and found     %s \n", expected_token, current_token);
-
-            if (!Objects.equals(current_token, "LEFT_BRACE")
-            || !Objects.equals(current_token, "RIGHT_BRACE")
-            || !Objects.equals(current_token, "LEFT_PAREN")
-            || !Objects.equals(current_token, "RIGHT_PAREN")
-            || !Objects.equals(current_token, "ASSIGN")) {
-                // do nothing
-                myCST.addNode(token.getSymbol(), "leaf"); // leaf, expected_token
+                if (!exceptionTokens.contains(current_token)) {
+                    myAST.addNode(token.getSymbol() , "leaf", token);
+                }
             }
             token_pointer++;
 
@@ -146,23 +229,19 @@ public class SemanticAnalysis extends Tree{
                 token = Lexer.tokens.get(token_pointer);
                 current_token = Lexer.tokens.get(token_pointer).getLexemeName();
             }
-            // System.out.printf("DEBUG Parser - WRONG:   expected    %-6s    and instead   %s \n", expected_token, "RAN OUT OF TOKENS");
-
-        } else {
-            error_count++;
-            //System.out.printf("DEBUG Parser - WRONG:   expected    %-14s and found     %s \n", expected_token, current_token);
         }
     }
+
 
     /**
      * Procedure to parse Program
      */
     public void parseProgram() {
-        myCST.addNode("program", "root" );
+        myAST.addNode("program", "root", token );
 
         parseBlock();
 
-        //myCST.moveUp();
+        //myAST.moveUp();
         /**
          * EOP is not part of the program unless it is separating two programs
          */
@@ -173,13 +252,15 @@ public class SemanticAnalysis extends Tree{
      * Procedure to parse Block
      */
     public void parseBlock() {
-        myCST.addNode("Block", "branch");
+        myAST.addNode("Block", "branch", token);
 
         this.match(current_token, "LEFT_BRACE");
         parseStatementList();
         match(current_token, "RIGHT_BRACE");
 
-        myCST.moveUp();
+        if (token_pointer < Lexer.tokens.size() - 1) {
+            myAST.moveUp();
+        }
     }
 
     /**
@@ -199,10 +280,6 @@ public class SemanticAnalysis extends Tree{
 
     public void parseStatement() {
 
-        list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("PRINT", "ID", "WHILE", "IF", "LEFT_BRACE"));
-
-
         if (Objects.equals(current_token, "PRINT")) {
             parsePrintStatement();
         } else if (Objects.equals(current_token, "ID")) {
@@ -217,66 +294,60 @@ public class SemanticAnalysis extends Tree{
             parseIfStatement();
         } else if (Objects.equals(current_token, "LEFT_BRACE")) {
             parseBlock();
-        } else {
-            error(list_expected_strings);
         }
-
     }
 
     public void parsePrintStatement() {
-        myCST.addNode("Print Statement", "branch");
+        myAST.addNode("Print Statement", "branch", token);
 
         match(current_token, "PRINT");
         match(current_token, "LEFT_PAREN");
          parseExpr();
         match(current_token, "RIGHT_PAREN");
 
-        myCST.moveUp();
+        myAST.moveUp();
     }
 
     public void parseAssignmentStatement() {
-        myCST.addNode("Assignment Statement", "branch");
+        myAST.addNode("Assignment Statement", "branch", token);
 
         parseId();
         match(current_token, "ASSIGN");
         parseExpr();
 
-        myCST.moveUp();
+        myAST.moveUp();
     }
 
     public void parseVarDecl() {
-        myCST.addNode("Variable Declaration", "branch");
+        myAST.addNode("Variable Declaration", "branch", token);
 
         parseType();
         parseId();
 
-        myCST.moveUp();
+        myAST.moveUp();
     }
 
     public void parseWhileStatement() {
-        myCST.addNode("While Statement", "branch");
+        myAST.addNode("While Statement", "branch", token);
 
         match(current_token, "WHILE");
         parseBooleanExpr();
         parseBlock();
 
-        myCST.moveUp();
+        myAST.moveUp();
     }
 
     public void parseIfStatement() {
-        myCST.addNode("If Statement", "branch");
+        myAST.addNode("If Statement", "branch", token);
 
         match(current_token, "IF");
         parseBooleanExpr();
         parseBlock();
 
-        myCST.moveUp();
+        myAST.moveUp();
     }
 
     public void parseExpr() {
-
-        list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("DIGIT", "STRING", "BOOLEAN", "ID"));
 
         if (Objects.equals(current_token, "DIGIT")) {
             parseIntExpr();
@@ -288,8 +359,6 @@ public class SemanticAnalysis extends Tree{
             parseBooleanExpr();
         } else if (Objects.equals(current_token, "ID")) {
             parseId();
-        } else {
-            error(list_expected_strings);
         }
 
     }
@@ -326,32 +395,10 @@ public class SemanticAnalysis extends Tree{
     }
 
     public void parseId() {
-
         match(current_token, "ID");
-        Tokens tok = Lexer.tokens.get(token_pointer-1);
-        String symbol = "";
-        String name = "";
-        symbol = tok.getSymbol();
-        name = tok.getLexemeName();
-        if (Objects.equals(name, "ID")) {
-            if (!Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "INT")
-                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "STRING")
-                 || !Objects.equals(Lexer.tokens.get(token_pointer-2).getLexemeName(), "BOOLEAN")) {
-                if (symbolTableContent.contains(symbol)) {
-                    if (Objects.equals(String.valueOf(scope_num), (symbolTableContent.get(symbolTableContent.indexOf(symbol) + 2)).trim())) {
-                        System.out.println("variable [ " + symbol + " ] is declared");
-                    } else {
-                        System.out.println("Variable  [ " + symbol + " ] is NOT declared in scope " + scope_num);
-                    }
-                }
-            }
-        }
     }
 
     public void parseType() {
-
-        list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("INT", "STRING", "BOOLEAN"));
 
         if (Objects.equals(current_token, "INT")) {
             match(current_token, "INT");
@@ -359,8 +406,6 @@ public class SemanticAnalysis extends Tree{
             match(current_token, "STRING");
         } else if (Objects.equals(current_token, "BOOLEAN")) {
             match(current_token, "BOOLEAN");
-        } else {
-            error(list_expected_strings);
         }
 
     }
@@ -377,26 +422,21 @@ public class SemanticAnalysis extends Tree{
 
     public void parseBoolVal() {
 
-        list_expected_strings.clear();
-        list_expected_strings.addAll(Arrays.asList("False", "TRUE"));
-
         if (Objects.equals(current_token, "FALSE")) {
             match(current_token, "FALSE");
         } else if (Objects.equals(current_token, "TRUE")) {
             match(current_token, "TRUE");
-        } else {
-            error(list_expected_strings);
         }
 
     }
 
     public void parseIntOp() {
         // TODO does IntOp need to be on the AST
-        //myCST.addNode("IntOp", "branch");
+        //myAST.addNode("IntOp", "branch", token);
 
         match(current_token, "PLUS");
 
-        //myCST.moveUp();
+        //myAST.moveUp();
     }
 
     public void error(ArrayList<String> list_expected_tokens) {
@@ -407,7 +447,55 @@ public class SemanticAnalysis extends Tree{
         tokens = toks;
         PROGRAM_NUMBER = program_number;
     }
-    Tree tree = new Tree();
+
+    public static String getInteger(String input) {
+        return "Integer";
+    }
+    public static String getString(String input) {
+        return "String";
+    }
+    public static String getBoolean(String input) {
+        return "Boolean";
+    }
+
+    /*
+    public static void printSymbolTable(Tree myAST) {
+        buildSymbolTable(myAST.root);
+        // print the symbol table
+        System.out.println("Symbol Table:");
+        for (String variableName : symbolTable.keySet()) {
+            SymbolTableEntry entry = symbolTable.get(variableName);
+            System.out.println("Variable Name: " + variableName +
+                    ", Type: " + entry.getType() +
+                    ", Scope: " + entry.getScope());
+        }
+    }
+
+    private static void buildSymbolTable(Tree myAST) {
+        Node node = myAST.root;
+        if (node.getName().equals("Variable Declaration")) {
+            String variableName = node.getName();
+            String variableType = node.getKind();
+            int scope = scope_num;
+            SymbolTableEntry entry = new SymbolTableEntry(variableName, variableType);
+            symbolTable.put(variableName, entry);
+        } else if (node.getName().equals("Assignment Statement")) {
+            String variableName = node.getName();
+            SymbolTableEntry entry = symbolTable.get(variableName);
+            if (entry == null) {
+                System.err.println("Error: Variable " + variableName + " not declared.");
+            } else {
+                String variableType = entry.getType();
+                // perform type checking here
+                // ...
+            }
+        }
+        for (myAST child : node.getChildren()) {
+            Node root = child.root;
+            buildSymbolTable(chil);
+        }
+    }
+    */
 
 }
 
