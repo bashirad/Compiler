@@ -48,7 +48,8 @@ public class Tree {
             // ... update the current node pointer to ourselves.
             this.cur = node;
         } else {
-            //this.cur.addChild(null);
+            // Add the token as a child node of the current leaf node.
+            node.setToken(token);
         }
     }
 

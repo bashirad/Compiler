@@ -8,11 +8,8 @@ public class SemanticAnalysis extends Tree{
     private static Tokens token = null;
     private static final Tree myAST = new Tree();
     private static final SymbolTables symbolTable = new SymbolTables();
-
     private static int error_count = 0;
     private static int scope_num = -1;
-    //private static final ArrayList<String> list_expected_strings = new ArrayList<>();
-
     public static void main(String[] args) {
 
         /**
@@ -25,7 +22,6 @@ public class SemanticAnalysis extends Tree{
         //init_Parser("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
         init_Semantic();
     }
-
     public static void init_Semantic() {
 
         /**
@@ -76,14 +72,12 @@ public class SemanticAnalysis extends Tree{
 
 
     }
-
     public static void buildSymbolTable(Tree myAST) {
 
         Node root = myAST.root;
 
         traverseAST(root);
     }
-
     public static void traverseAST(Node root) {
         // We can ignore the traversalResult for now
         StringBuilder traversalResult = new StringBuilder();
@@ -91,7 +85,6 @@ public class SemanticAnalysis extends Tree{
         System.out.println("This is from traverseAST method");
         System.out.println(traversalResult);
     }
-
     private static void expandAST(Node node, int depth, StringBuilder traversalResult) {
 
         String name = node.getName();
@@ -104,6 +97,10 @@ public class SemanticAnalysis extends Tree{
 
         // If there are no children (i.e., leaf nodes)...
         if (Objects.equals(node.getKind(), "leaf")) {
+            Tokens token = node.getTokens();
+            if (token != null) {
+                System.out.println("\n\ntoken is " + token.getLexemeName() + " " + token.getSymbol() + " " + token.getLineNum() + " " + token.getPosNum());
+            }
             // ... note the leaf node.
             traversalResult.append("[ ").append(node.getName()).append(" ]");
             traversalResult.append("\n");
@@ -152,32 +149,75 @@ public class SemanticAnalysis extends Tree{
                     System.out.println("Type checking happens here");
                     System.out.println("****************** " + symbolTable.getSymbol(idA));
 
+                    // Integer type checking
                     if (Objects.equals(symbolTable.getSymbol(idA), "int")) {
-                        String input = exprA;
                         try {
-                            int number = Integer.parseInt(input);
-                            System.out.println(input + " is an integer.");
-                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                            // integer is being assigned to another identifier which can hold a value of any type
+                            if (exprA.length() == 1) {
+                                if (symbolTable.getSymbol(exprA) != null) {
+                                    if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                        System.out.println(exprA + " is an integer.");
+                                        System.out.println("Types match! for " + idA + " and " + exprA);
+                                    } else {
+                                        System.out.println(exprA + " is not an integer.");
+                                        System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                    }
+                                }
+                            } else {
+                                int number = Integer.parseInt(exprA);
+                                System.out.println(exprA + " is an integer.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            }
                         } catch (NumberFormatException e) {
-                            System.out.println(input + " is not an integer.");
-                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                            System.out.println(exprA + " is not an integer.");
+                            System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
                         }
-                    } else if (Objects.equals(symbolTable.getSymbol(idA), "boolean")) {
-                       // exprA has to be false or true
-                        if (Objects.equals(exprA, "true") || Objects.equals(exprA, "false")) {
-                            System.out.println(exprA + " is a boolean.");
-                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                    }
+                    // Boolean type checking
+                    else if (Objects.equals(symbolTable.getSymbol(idA), "boolean")) {
+                        // Boolean is being assigned to another identifier which can hold a value of any type
+                        if (exprA.length() == 1) {
+                            if (symbolTable.getSymbol(exprA) != null) {
+                                if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                    System.out.println(exprA + " is a boolean.");
+                                    System.out.println("Types match! for " + idA + " and " + exprA);
+                                } else {
+                                    System.out.println(exprA + " is not a boolean.");
+                                    System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                }
+                            }
                         } else {
-                            System.out.println(exprA + " is not a boolean.");
-                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                            // exprA has to be false or true
+                            if (Objects.equals(exprA, "true") || Objects.equals(exprA, "false")) {
+                                System.out.println(exprA + " is a boolean.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            } else {
+                                System.out.println(exprA + " is not a boolean.");
+                                System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
+                            }
                         }
-                    } else {
-                        if (exprA.startsWith("\"") && exprA.endsWith("\"")) {
-                            System.out.println(exprA + " is a string.");
-                            System.out.println("\nTypes match! for " + idA + " and " + exprA);
+                    }
+                    // String type checking
+                    else {
+                        // String is being assigned to another identifier which can hold a value of any type
+                        if (exprA.length() == 1) {
+                            if (symbolTable.getSymbol(exprA) != null) {
+                                if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                    System.out.println(exprA + " is a string.");
+                                    System.out.println("Types match! for " + idA + " and " + exprA);
+                                } else {
+                                    System.out.println(exprA + " is not a string.");
+                                    System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                }
+                            }
                         } else {
-                            System.out.println(exprA + " is not a string.");
-                            System.out.println("\nType MISMATCH! for " + left.getName() + " and " + right.getName());
+                            if (exprA.startsWith("\"") && exprA.endsWith("\"")) {
+                                System.out.println(exprA + " is a string.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            } else {
+                                System.out.println(exprA + " is not a string.");
+                                System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
+                            }
                         }
                     }
                 }
@@ -191,8 +231,6 @@ public class SemanticAnalysis extends Tree{
             }
         }
     }
-
-
     /**
      * match method to check currentToken to the expectedToken
      */
@@ -231,8 +269,6 @@ public class SemanticAnalysis extends Tree{
             }
         }
     }
-
-
     /**
      * Procedure to parse Program
      */
@@ -247,7 +283,6 @@ public class SemanticAnalysis extends Tree{
          */
         match(current_token, "EOP"); // end of program
     }
-
     /**
      * Procedure to parse Block
      */
@@ -262,7 +297,6 @@ public class SemanticAnalysis extends Tree{
             myAST.moveUp();
         }
     }
-
     /**
      * Procedure to parse StatementList
      */
@@ -277,7 +311,6 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseStatement() {
 
         if (Objects.equals(current_token, "PRINT")) {
@@ -296,7 +329,6 @@ public class SemanticAnalysis extends Tree{
             parseBlock();
         }
     }
-
     public void parsePrintStatement() {
         myAST.addNode("Print Statement", "branch", token);
 
@@ -307,7 +339,6 @@ public class SemanticAnalysis extends Tree{
 
         myAST.moveUp();
     }
-
     public void parseAssignmentStatement() {
         myAST.addNode("Assignment Statement", "branch", token);
 
@@ -317,7 +348,6 @@ public class SemanticAnalysis extends Tree{
 
         myAST.moveUp();
     }
-
     public void parseVarDecl() {
         myAST.addNode("Variable Declaration", "branch", token);
 
@@ -326,7 +356,6 @@ public class SemanticAnalysis extends Tree{
 
         myAST.moveUp();
     }
-
     public void parseWhileStatement() {
         myAST.addNode("While Statement", "branch", token);
 
@@ -336,7 +365,6 @@ public class SemanticAnalysis extends Tree{
 
         myAST.moveUp();
     }
-
     public void parseIfStatement() {
         myAST.addNode("If Statement", "branch", token);
 
@@ -346,7 +374,6 @@ public class SemanticAnalysis extends Tree{
 
         myAST.moveUp();
     }
-
     public void parseExpr() {
 
         if (Objects.equals(current_token, "DIGIT")) {
@@ -362,7 +389,6 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseIntExpr() {
 
         match(current_token, "DIGIT");
@@ -372,13 +398,11 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseStringExpr() {
 
         match(current_token, "CHAR_LIST");
 
     }
-
     public void parseBooleanExpr() {
 
         if (Objects.equals(current_token, "FALSE")
@@ -393,11 +417,9 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseId() {
         match(current_token, "ID");
     }
-
     public void parseType() {
 
         if (Objects.equals(current_token, "INT")) {
@@ -409,7 +431,6 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseBoolOp() {
 
         if (Objects.equals(current_token, "EQUAL_TO_OP")) {
@@ -419,7 +440,6 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseBoolVal() {
 
         if (Objects.equals(current_token, "FALSE")) {
@@ -429,7 +449,6 @@ public class SemanticAnalysis extends Tree{
         }
 
     }
-
     public void parseIntOp() {
         // TODO does IntOp need to be on the AST
         //myAST.addNode("IntOp", "branch", token);
@@ -438,26 +457,13 @@ public class SemanticAnalysis extends Tree{
 
         //myAST.moveUp();
     }
-
     public void error(ArrayList<String> list_expected_tokens) {
         System.out.println("expected one of these " + list_expected_tokens.toString() + " but found " + current_token);
     }
-
     public static void getTokens(int program_number, ArrayList<Tokens> toks) {
         tokens = toks;
         PROGRAM_NUMBER = program_number;
     }
-
-    public static String getInteger(String input) {
-        return "Integer";
-    }
-    public static String getString(String input) {
-        return "String";
-    }
-    public static String getBoolean(String input) {
-        return "Boolean";
-    }
-
     /*
     public static void printSymbolTable(Tree myAST) {
         buildSymbolTable(myAST.root);
@@ -496,7 +502,6 @@ public class SemanticAnalysis extends Tree{
         }
     }
     */
-
 }
 
 
