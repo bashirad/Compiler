@@ -8,7 +8,7 @@ private static final SymbolTable globalSymbolTable = new SymbolTable(0);
 private static final Map<Integer, SymbolTable> symbolTables = new HashMap<>();
 
 // Create the symbol table tree
-private static SymbolTableTree mySymbolTableTree = new SymbolTableTree();
+private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
     public static void traverseAST(Tree.Node root) {
         symbolTables.put(0, globalSymbolTable);
         // create an empty scope stack and start processing the root node
@@ -83,6 +83,11 @@ private static SymbolTableTree mySymbolTableTree = new SymbolTableTree();
                 //System.out.println("Variable Declaration => " + nameV + " is added to SymbolTable " + scopeStack.peek() + "\n");
             } else if (Objects.equals(name, "Assignment Statement")) {
                 processAssignStmt(node, scopeStack);
+            } else if (Objects.equals(name, "Print Statement")) {
+                processPrintStmt(node, scopeStack);
+            } else if (Objects.equals(name, "EQUAL_TO_OP")
+                    || Objects.equals(name, "NOT_EQUAL_TO_OP")) {
+                processIsEqual(node, scopeStack);
             }
 
 
@@ -115,13 +120,55 @@ private static SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         // add to symbol table if not there
 
         if (currentSymbolTable.getSymbol(idA) == null) {
-            System.out.println("\nAssignment Statement => ERROR: Variable " + left.getName() + " is used before it is declared");
+            System.out.println("\nAssignment Statement => ERROR: Variable " + idA + " is NOT declared in scope");
         } else {
             if (!typeCheck(node, scopeStack)) {
                 System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
             }
         }
     }
+    private static void processIsEqual(Tree.Node node, Stack<Integer> scopeStack) {
+        Tree.Node left = node.getChildren().get(0);
+        Tree.Node right = node.getChildren().get(1);
+
+        String lexemeNameE1 = left.getTokens().lexemeName;
+        String lexemeNameE2 = left.getTokens().lexemeName;
+
+        String exprE1 = left.getName();
+        String exprE2 = right.getName();
+
+        // add to symbol table if not there
+        int currentScope = scopeStack.peek();
+        SymbolTable currentSymbolTable = symbolTables.get(currentScope);
+
+        // add to symbol table if not there
+
+        if (Objects.equals(lexemeNameE1, "ID") && currentSymbolTable.getSymbol(exprE1) == null) {
+            System.out.println("\nAssignment Statement => ERROR: Variable " + exprE1 + " is NOT declared in scope");
+        } else if (Objects.equals(lexemeNameE2, "ID") && currentSymbolTable.getSymbol(exprE2) == null) {
+            System.out.println("\nAssignment Statement => ERROR: Variable " + exprE2 + " is NOT declared in scope");
+        } else {
+            if (!typeCheck(node, scopeStack)) {
+                System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + exprE1 + " and " + exprE2);
+            }
+        }
+    }
+    private static void processPrintStmt(Tree.Node node, Stack<Integer> scopeStack) {
+        Tree.Node child = node.getChildren().get(0);
+
+        String exprA = child.getName();
+
+        // add to symbol table if not there
+        int currentScope = scopeStack.peek();
+        SymbolTable currentSymbolTable = symbolTables.get(currentScope);
+
+        // check if symbol is already declared
+
+        if (currentSymbolTable.getSymbol(exprA) == null) {
+            System.out.println("\nAssignment Statement => ERROR: Variable " + exprA + " is NOT declared in scope");
+        }
+    }
+
 
     /*private static void processIsEqual(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node left = node.getChildren().get(0);
