@@ -2,10 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/Symbol.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/SymbolTable.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/SymbolTableTree.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/processAST.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Compiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Compiler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/SemanticAnalysis.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticAnalysis.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tokens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tokens.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SymbolTables.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Workstation1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Workstation2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Workstation3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation3.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
