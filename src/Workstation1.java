@@ -193,4 +193,120 @@ public class Workstation1 {
                                 String.valueOf(token.getLineNum())});
                     }
      */
+    /*
+    else if (Objects.equals(name, "Variable Declaration")) {
+                left = node.getChildren().get(0);
+                right = node.getChildren().get(1);
+
+                String typeV = left.getName();
+                String nameV = right.getName();
+
+                System.out.println("Variable Declaration => left is typeV " + typeV);
+                System.out.println("Variable Declaration => right is nameV " + nameV);
+
+                // add to symbol table if not there
+
+                if (symbolTable.getSymbol(nameV) == null) {
+                    symbolTable.addSymbol(nameV, typeV);
+                    System.out.println("Variable Declaration => " + nameV + " is added to symbolTable\n");
+
+
+                } else {
+                    System.out.println("Variable " + right.getName() + " is declared more than once");
+                }
+            }
+    else if (Objects.equals(node.getName(), "Assignment Statement")) {
+                left = node.getChildren().get(0);
+                right = node.getChildren().get(1);
+
+                String idA = left.getName();
+                String exprA = right.getName();
+
+                System.out.println("\nAssignment Statement => left idA is " + idA);
+                System.out.println("Assignment Statement => right exprA is " + exprA);
+
+                // add to symbol table if not there
+
+                if (symbolTable.getSymbol(idA) == null) {
+                    System.out.println("\nAssignment Statement => Variable " + left.getName() + " is used before it is declared");
+                } else {
+                    System.out.println("Type checking happens here");
+                    System.out.println("****************** " + symbolTable.getSymbol(idA));
+
+                    // Integer type checking
+                    if (Objects.equals(symbolTable.getSymbol(idA), "int")) {
+                        try {
+                            // integer is being assigned to another identifier which can hold a value of any type
+                            if (exprA.length() == 1) {
+                                if (symbolTable.getSymbol(exprA) != null) {
+                                    if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                        System.out.println(exprA + " is an integer.");
+                                        System.out.println("Types match! for " + idA + " and " + exprA);
+                                    } else {
+                                        System.out.println(exprA + " is not an integer.");
+                                        System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                    }
+                                }
+                            } else {
+                                int number = Integer.parseInt(exprA);
+                                System.out.println(exprA + " is an integer.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println(exprA + " is not an integer.");
+                            System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
+                        }
+                    }
+                    // Boolean type checking
+                    else if (Objects.equals(symbolTable.getSymbol(idA), "boolean")) {
+                        // Boolean is being assigned to another identifier which can hold a value of any type
+                        if (exprA.length() == 1) {
+                            if (symbolTable.getSymbol(exprA) != null) {
+                                if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                    System.out.println(exprA + " is a boolean.");
+                                    System.out.println("Types match! for " + idA + " and " + exprA);
+                                } else {
+                                    System.out.println(exprA + " is not a boolean.");
+                                    System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                }
+                            }
+                        } else {
+                            // exprA has to be false or true
+                            if (Objects.equals(exprA, "true") || Objects.equals(exprA, "false")) {
+                                System.out.println(exprA + " is a boolean.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            } else {
+                                System.out.println(exprA + " is not a boolean.");
+                                System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
+                            }
+                        }
+                    }
+                    // String type checking
+                    else {
+                        // String is being assigned to another identifier which can hold a value of any type
+                        if (exprA.length() == 1) {
+                            if (symbolTable.getSymbol(exprA) != null) {
+                                if (Objects.equals(symbolTable.getSymbol(idA), symbolTable.getSymbol(exprA))) {
+                                    System.out.println(exprA + " is a string.");
+                                    System.out.println("Types match! for " + idA + " and " + exprA);
+                                } else {
+                                    System.out.println(exprA + " is not a string.");
+                                    System.out.println("Type MISMATCH! for " + idA + " and " + exprA);
+                                }
+                            }
+                        } else {
+                            if (exprA.startsWith("\"") && exprA.endsWith("\"")) {
+                                System.out.println(exprA + " is a string.");
+                                System.out.println("Types match! for " + idA + " and " + exprA);
+                            } else {
+                                System.out.println(exprA + " is not a string.");
+                                System.out.println("Type MISMATCH! for " + left.getName() + " and " + right.getName());
+                            }
+                        }
+                    }
+                }
+            }
+
+
+     */
 }
