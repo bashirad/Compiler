@@ -10,12 +10,6 @@ public class Compiler implements ICompiler {
             /** Execute the Lexer                   */
             Lexer.init_Lexer(filePath);
 
-            /** Execute the Parser                  */
-
-            /** Execute the Semantics ...           */
-
-
-            /** Execute the 6502 Code Generator     */
         }
 
     }
