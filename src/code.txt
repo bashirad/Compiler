@@ -1,8 +1,10 @@
 {
- int a
- {
- string a
- a = "a"
- }
+    int a
+
+    boolean b
+    string c
+
+    b = false
+
 
 }$
