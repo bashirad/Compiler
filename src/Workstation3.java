@@ -3,8 +3,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
-public class Workstation3 {
-
+/*public class Workstation3 {
+/*
         private static final SymbolTable globalSymbolTable = new SymbolTable(0);
         private static final Map<Integer, SymbolTable> symbolTables = new HashMap<>();
 
@@ -19,7 +19,7 @@ public class Workstation3 {
         //
 
         //}
-        public static void traverseAST(Tree.Node root) {
+        /*public static void traverseAST(Tree.Node root) {
             symbolTables.put(0, globalSymbolTable);
             // create an empty scope stack and start processing the root node
             Stack<Integer> scopeStack = new Stack<>();
@@ -189,3 +189,4 @@ public class Workstation3 {
         }
  }
 
+*/

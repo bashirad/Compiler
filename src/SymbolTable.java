@@ -11,6 +11,17 @@ public class SymbolTable {
         this.scopeId = scopeId;
         this.symbolMap = new HashMap<>();
     }
+    public void clear() {
+        symbolMap.clear();
+    }
+    public void replaceSymbol(Symbol newSymbol) {
+        Symbol oldSymbol = symbolMap.get(newSymbol.name());
+        if (oldSymbol != null) {
+            symbolMap.remove(oldSymbol.name());
+            symbolMap.put(newSymbol.name(), newSymbol);
+        }
+    }
+
     public void addSymbol(Symbol symbol) {
         symbolMap.put(symbol.name(), symbol);
     }
@@ -51,13 +62,29 @@ public class SymbolTable {
     }
     public void printSymbolTable() {
         System.out.println("Symbol table for scope " + scopeId + ":");
-        System.out.println("+-----------------+-----------------+-----------------+");
-        System.out.println("| Variable        | Type            | Scope           |");
-        System.out.println("+-----------------+-----------------+-----------------+");
+        System.out.println("+-----------------+-----------------+-----------------+-----------------+-----------------+");
+        System.out.println("| Variable        | Type            | isInitialized   | IsUsed          | Scope           |");
+        System.out.println("+-----------------+-----------------+-----------------+-----------------+-----------------+");
         for (Symbol symbol : symbolMap.values()) {
-            System.out.printf("| %-15s | %-15s | %-15d |\n", symbol.name(), symbol.type(), scopeId);
+            System.out.printf("| %-15s | %-15s | %-15b | %-15b | %-15d |\n", symbol.name(), symbol.type(), symbol.isInitialized(), symbol.isUsed(), scopeId);
         }
-        System.out.println("+-----------------+-----------------+-----------------+");
+        System.out.println("+-----------------+-----------------+-----------------+-----------------+-----------------+");
+    }
+    public int errorSymbolTable() {
+        int warningCount = 0;
+        for (Symbol symbol : symbolMap.values()) {
+            if (symbol.isInitialized() && !symbol.isUsed()) {
+                warningCount++;
+                System.out.println("WARNING Semantic Analysis - Variable " + symbol.name() + " is declared and initialized but was never used.");
+            } else if (!symbol.isInitialized() && symbol.isUsed()) {
+                warningCount++;
+                System.out.println("WARNING Semantic Analysis - Variable " + symbol.name() + " is used before it is initialized.");
+            } else if (!symbol.isUsed()) {
+                warningCount++;
+                System.out.println("WARNING Semantic Analysis - Variable " + symbol.name() + " is declared but was never used.");
+            }
+        }
+        return warningCount;
     }
 
 }

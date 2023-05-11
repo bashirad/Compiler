@@ -4,11 +4,10 @@ import java.util.Map;
 public class SymbolTableTree {
 
     public static Map<Integer, SymbolTable> symbolTables = null;
-    private final SymbolTable globalSymbolTable;
 
     public SymbolTableTree() {
         symbolTables = new HashMap<>();
-        this.globalSymbolTable = new SymbolTable(0);
+        SymbolTable globalSymbolTable = new SymbolTable(0);
         symbolTables.put(0, globalSymbolTable);
     }
 
@@ -24,6 +23,16 @@ public class SymbolTableTree {
         System.out.println("Symbol table tree:");
         for (SymbolTable symbolTable : symbolTables.values()) {
             symbolTable.printSymbolTable();
+        }
+    }
+    public void errorCheckForSymbolTables() {
+        int warningCount = 0;
+        System.out.println("Checking for Warnings ...");
+        for (SymbolTable symbolTable : symbolTables.values()) {
+            warningCount = symbolTable.errorSymbolTable();
+        }
+        if ( warningCount == 0) {
+            System.out.println("No Warnings were found!");
         }
     }
 
@@ -49,6 +58,12 @@ public class SymbolTableTree {
         }
         return symbols.toString();
     }
+    public void clearSymbolTables() {
+        for (SymbolTable symbolTable : symbolTables.values()) {
+            symbolTable.clear();
+        }
+    }
+
 
     private String getSymbols(SymbolTable symbolTable) {
         StringBuilder symbols = new StringBuilder();

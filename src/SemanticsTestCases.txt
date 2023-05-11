@@ -54,3 +54,44 @@ CASE THREE:
 }
 $
 
+/* Test case for multiple programs */
+{
+    print("i love compilers")
+    int a
+    a = 2
+    string s
+    s = "ha"
+}$
+{
+    int a
+    int g
+    g = 4
+    string h
+    h = "hey"
+}$
+
+CASE SIX: CHECKING FOR ERRORS IN IsInitialized AND IN IsUsed METHODS
+
+{
+    int a
+
+    {
+        boolean b
+
+        {
+            string c
+
+            {
+                b = true
+                a = 1
+                c = "hello"
+
+                {
+                    print(a)
+                    print(b)
+                    print(c)
+                }
+            }
+        }
+    }
+}$
