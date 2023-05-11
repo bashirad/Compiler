@@ -4,12 +4,13 @@ import java.util.Objects;
 import java.util.Stack;
 
 public class processAST  {
-private static final SymbolTable globalSymbolTable = new SymbolTable(0);
+static final SymbolTable globalSymbolTable = new SymbolTable(0);
 private static final Map<Integer, SymbolTable> symbolTables = new HashMap<>();
 
 // Create the symbol table tree
-private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
-    public static void traverseAST(Tree.Node root) {
+static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
+    public static SymbolTableTree traverseAST(Tree.Node root) {
+        SymbolTableTree passSymbolTableTree = new SymbolTableTree();
         symbolTables.put(0, globalSymbolTable);
         // create an empty scope stack and start processing the root node
         Stack<Integer> scopeStack = new Stack<>();
@@ -21,9 +22,14 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         mySymbolTableTree.printSymbolTables();
         // issue warnings for Semantic Analysis
         mySymbolTableTree.errorCheckForSymbolTables();
-        // clear the tree of hash tables
-        globalSymbolTable.clear();
-        mySymbolTableTree.clearSymbolTables();
+
+        passSymbolTableTree = mySymbolTableTree;
+
+        // clear tables
+        processAST.globalSymbolTable.clear();
+        processAST.mySymbolTableTree.clearSymbolTables();
+
+        return passSymbolTableTree;
     }
     private static void processNode(Tree.Node node, int depth, StringBuilder traversalResult, Stack<Integer> scopeStack, Map<Integer, SymbolTable> symbolTables) {
         SymbolTable currentSymbolTable = null;
