@@ -7,6 +7,7 @@ public class SemanticAnalysis extends Tree{
     private static String current_token;
     private static Tokens token = null;
     private static final Tree myAST = new Tree();
+    private static SymbolTableTree mySymbolTableTree = new SymbolTableTree();
     private static int error_count = 0;
     private static int current_scope = 0;
     public static void main(String[] args) {
@@ -56,7 +57,12 @@ public class SemanticAnalysis extends Tree{
 
             buildSymbolTable(myAST);
 
+            // pass the AST and the Symbol Tables here to Code Generator
+            CodeGenerator.init_code_generator(myAST, mySymbolTableTree);
+
+            // clear the AST and tree of hash tables for the next program
             myAST.clear();
+
             current_scope = 0;
         }
 
@@ -66,7 +72,8 @@ public class SemanticAnalysis extends Tree{
 
         Node root = myAST.root;
 
-        processAST.traverseAST(root);
+        mySymbolTableTree = processAST.traverseAST(root);
+
     }
     /**
      * match method to check currentToken to the expectedToken
