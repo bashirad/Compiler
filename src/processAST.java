@@ -18,8 +18,12 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         // We can ignore the traversalResult for now
 
         processNode(root, 0, traversalResult, scopeStack, symbolTables);
-        //System.out.println(traversalResult);
         mySymbolTableTree.printSymbolTables();
+        // issue warnings for Semantic Analysis
+        mySymbolTableTree.errorCheckForSymbolTables();
+        // clear the tree of hash tables
+        globalSymbolTable.clear();
+        mySymbolTableTree.clearSymbolTables();
     }
     private static void processNode(Tree.Node node, int depth, StringBuilder traversalResult, Stack<Integer> scopeStack, Map<Integer, SymbolTable> symbolTables) {
         SymbolTable currentSymbolTable = null;
@@ -64,11 +68,11 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
 
                 // create symbol in case it needs to be added
                 currentSymbolTable = symbolTables.get(scopeStack.peek());
-                Symbol symbol = new Symbol(nameV, typeV, scopeStack.peek());
 
                 if (scopeStack.peek() == 0) {
                     // add to the root symbol table if this first symbol is not there
-                    if (globalSymbolTable.getSymbol(symbol.name()) == null) {
+                    if (globalSymbolTable.getSymbol(nameV) == null) {
+                        Symbol symbol = new Symbol(nameV, typeV, scopeStack.peek(), false, false);
                         globalSymbolTable.addSymbol(symbol);
                         mySymbolTableTree.addSymbolTable(scopeStack.peek(), globalSymbolTable);
                     } else {
@@ -77,6 +81,7 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
                     }
                 }
 
+                Symbol symbol = new Symbol(nameV, typeV, scopeStack.peek(), false, false);
                 currentSymbolTable.addSymbol(symbol);
                 mySymbolTableTree.addSymbolTable(scopeStack.peek(),currentSymbolTable);
 
@@ -105,7 +110,6 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
             }
         }
     }
-
     private static void processAssignStmt(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node left = node.getChildren().get(0);
         Tree.Node right = node.getChildren().get(1);
@@ -122,6 +126,14 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         if (currentSymbolTable.getSymbol(idA) == null) {
             System.out.println("\nAssignment Statement => ERROR: Variable " + idA + " is NOT declared in scope");
         } else {
+            Symbol symbol = currentSymbolTable.getSymbol(idA);
+            int symbolScope = currentSymbolTable.getSymbol(idA).scopeId();
+            Symbol newSymbol = symbol.withInitialized(true);
+            SymbolTable symbolTable = symbolTables.get(symbolScope);
+            if (symbolTable != null) {
+                symbolTable.replaceSymbol(newSymbol);
+            }
+
             if (!typeCheck(node, scopeStack)) {
                 System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
             }
@@ -132,7 +144,7 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         Tree.Node right = node.getChildren().get(1);
 
         String lexemeNameE1 = left.getTokens().lexemeName;
-        String lexemeNameE2 = left.getTokens().lexemeName;
+        String lexemeNameE2 = right.getTokens().lexemeName;
 
         String exprE1 = left.getName();
         String exprE2 = right.getName();
@@ -148,6 +160,27 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         } else if (Objects.equals(lexemeNameE2, "ID") && currentSymbolTable.getSymbol(exprE2) == null) {
             System.out.println("\nAssignment Statement => ERROR: Variable " + exprE2 + " is NOT declared in scope");
         } else {
+            if (Objects.equals(lexemeNameE1, "ID")) {
+                Symbol symbol = currentSymbolTable.getSymbol(exprE1);
+                Symbol newSymbol = symbol.withUsed(true);
+                int symbolScope = currentSymbolTable.getSymbol(exprE1).scopeId();
+
+                SymbolTable symbolTable = symbolTables.get(symbolScope);
+                if (symbolTable != null) {
+                    symbolTable.replaceSymbol(newSymbol);
+                }
+
+            } else if (Objects.equals(lexemeNameE2, "ID")) {
+                Symbol symbol = currentSymbolTable.getSymbol(exprE2);
+                Symbol newSymbol = symbol.withUsed(true);
+                int symbolScope = currentSymbolTable.getSymbol(exprE2).scopeId();
+
+                SymbolTable symbolTable = symbolTables.get(symbolScope);
+                if (symbolTable != null) {
+                    symbolTable.replaceSymbol(newSymbol);
+                }
+
+            }
             if (!typeCheck(node, scopeStack)) {
                 System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + exprE1 + " and " + exprE2);
             }
@@ -156,7 +189,8 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
     private static void processPrintStmt(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node child = node.getChildren().get(0);
 
-        String exprA = child.getName();
+        String lexemeName = child.getTokens().getLexemeName();
+        String exprP = child.getName();
 
         // add to symbol table if not there
         int currentScope = scopeStack.peek();
@@ -164,86 +198,19 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
 
         // check if symbol is already declared
 
-        if (currentSymbolTable.getSymbol(exprA) == null) {
-            System.out.println("\nAssignment Statement => ERROR: Variable " + exprA + " is NOT declared in scope");
+        if (currentSymbolTable.getSymbol(exprP) == null && Objects.equals(lexemeName, "ID")) {
+            System.out.println("\nAssignment Statement => ERROR: Variable " + exprP + " is NOT declared in scope");
+        } else if (Objects.equals(lexemeName, "ID")) {
+            Symbol symbol = currentSymbolTable.getSymbol(exprP);
+            Symbol newSymbol = symbol.withUsed(true);
+            int symbolScope = currentSymbolTable.getSymbol(exprP).scopeId();
+
+            SymbolTable symbolTable = symbolTables.get(symbolScope);
+            if (symbolTable != null) {
+                symbolTable.replaceSymbol(newSymbol);
+            }
         }
     }
-
-
-    /*private static void processIsEqual(Tree.Node node, Stack<Integer> scopeStack) {
-        Tree.Node left = node.getChildren().get(0);
-        Tree.Node right = node.getChildren().get(1);
-
-        String idA = left.getName();
-        String exprA = right.getName();
-        String lexemeName = right.getTokens().lexemeName;
-
-        // add to symbol table if not there
-        int currentScope = scopeStack.peek();
-        SymbolTable currentSymbolTable = symbolTables.get(currentScope);
-
-        // add to symbol table if not there
-
-        if (currentSymbolTable.getSymbol(idA) == null) {
-            System.out.println("\nAssignment Statement => ERROR: Variable " + left.getName() + " is used before it is declared");
-        } else {
-            // Integer type checking
-            if (Objects.equals(currentSymbolTable.getSymbol(idA).type(), "int")) {
-                // integer is being assigned to another identifier which can hold a value of any type
-                if (Objects.equals(lexemeName, "ID")) {
-                    if (currentSymbolTable.getSymbol(exprA) != null) {
-                        if (!Objects.equals(currentSymbolTable.getSymbol(idA).type(), currentSymbolTable.getSymbol(exprA).type())) {
-                            // call error() here and increment it
-                            System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                        }
-                    }
-                } else {
-                    try {
-                        int number = Integer.parseInt(exprA);
-                    } catch (NumberFormatException e) {
-                        // call error() here and increment it
-                        System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                    }
-                }
-            }
-            // Boolean type checking
-            else if (Objects.equals(currentSymbolTable.getSymbol(idA).type(), "boolean")) {
-                // Boolean is being assigned to another identifier which can hold a value of any type
-                if (exprA.length() == 1) {
-                    if (Objects.equals(lexemeName, "ID")) {
-                        if (!Objects.equals(currentSymbolTable.getSymbol(idA), currentSymbolTable.getSymbol(idA))) {
-                            // call error() here and increment it
-                            System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                        }
-                    }
-                } else {
-                    // exprA has to be false or true
-                    if (!Objects.equals(exprA, "true") || !Objects.equals(exprA, "false")) {
-                        // call error() here and increment it
-                        System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                    }
-                }
-            }
-            // String type checking
-            else {
-                // String is being assigned to another identifier which can hold a value of any type
-                if (exprA.length() == 1) {
-                    if (Objects.equals(lexemeName, "ID")) {
-                        if (!Objects.equals(currentSymbolTable.getSymbol(idA), currentSymbolTable.getSymbol(idA))) {
-                            // call error() here and increment it
-                            System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                        }
-                    }
-                } else {
-                    if (!exprA.startsWith("\"") && !exprA.endsWith("\"")) {
-                        // call error() here and increment it
-                        System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + idA + " and " + exprA);
-                    }
-                }
-            }
-        }
-    }*/
-
     private static Boolean typeCheck(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node left = node.getChildren().get(0);
         Tree.Node right = node.getChildren().get(1);
@@ -257,6 +224,7 @@ private static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
 
         // Integer type checking
         if (Objects.equals(currentSymbolTable.getSymbol(idA).type(), "int")) {
+
             // integer is being assigned to another identifier which can hold a value of any type
             if (Objects.equals(lexemeName, "ID")) {
                 if (currentSymbolTable.getSymbol(exprA) != null) {

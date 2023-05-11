@@ -79,12 +79,15 @@ public class SemanticAnalysis extends Tree{
 
                 // Re-ordering tokens that are out of order
                 myAST.addNode(Lexer.tokens.get(token_pointer + 3).getLexemeName(), "branch", token);
-            } else if (Objects.equals(current_token, "RIGHT_PAREN") &&
-                    (Objects.equals(Lexer.tokens.get(token_pointer - 5).getLexemeName(), "IF")
-                            || Objects.equals(Lexer.tokens.get(token_pointer - 5).getLexemeName(), "WHILE"))
-        ) {
-                // Checked! this is allowing block to be the second child of IF or WHILE Statement
-                myAST.moveUp();
+            } else if (Objects.equals(current_token, "RIGHT_PAREN")) {
+                if (token_pointer >= 5 && Lexer.tokens.get(token_pointer - 5) != null) {
+                    Tokens token = Lexer.tokens.get(token_pointer - 5);
+                    String lexemeName = token.getLexemeName();
+                    if ("IF".equals(lexemeName) || "WHILE".equals(lexemeName)) {
+                        // Checked! this is allowing block to be the second child of IF or WHILE Statement
+                        myAST.moveUp();
+                    }
+                }
             } else {
 
                 // Start adding leaf nodes after all rearrangements

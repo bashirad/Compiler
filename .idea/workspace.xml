@@ -3,6 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SemanticAnalysis.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticAnalysis.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SemanticsTestCases.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/SemanticsTestCases.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Symbol.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Symbol.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SymbolTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SymbolTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SymbolTableTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/SymbolTableTree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Workstation3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation3.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/processAST.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/processAST.java" afterDir="false" />
     </list>
