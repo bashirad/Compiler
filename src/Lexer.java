@@ -24,7 +24,7 @@ public class Lexer {
         /**
          * Call init_Lexer and execute the Lexer in the Run environment
          */
-        init_Lexer("C:\\Users\\Bashir\\Documents\\Bashirs_Code_all\\Java\\cmpt432\\src\\code.txt");
+        init_Lexer("src\\code.txt");
     }
     public static void init_Lexer( String path) {
 
