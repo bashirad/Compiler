@@ -3,13 +3,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
-public class processAST  {
+public class ProcessAST {
 static final SymbolTable globalSymbolTable = new SymbolTable(0);
 private static final Map<Integer, SymbolTable> symbolTables = new HashMap<>();
 
 // Create the symbol table tree
 static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
-    public static SymbolTableTree traverseAST(Tree.Node root) {
+    public static void traverseAST(Tree.Node root) {
         SymbolTableTree passSymbolTableTree = new SymbolTableTree();
         symbolTables.put(0, globalSymbolTable);
         // create an empty scope stack and start processing the root node
@@ -23,13 +23,10 @@ static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
         // issue warnings for Semantic Analysis
         mySymbolTableTree.errorCheckForSymbolTables();
 
-        passSymbolTableTree = mySymbolTableTree;
 
-        // clear tables
-        processAST.globalSymbolTable.clear();
-        processAST.mySymbolTableTree.clearSymbolTables();
 
-        return passSymbolTableTree;
+        CodeGenerator.getSymbolTableTree(mySymbolTableTree);
+
     }
     private static void processNode(Tree.Node node, int depth, StringBuilder traversalResult, Stack<Integer> scopeStack, Map<Integer, SymbolTable> symbolTables) {
         SymbolTable currentSymbolTable = null;
@@ -72,7 +69,7 @@ static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
                 String typeV = left.getName();
                 String nameV = right.getName();
 
-                // create symbol in case it needs to be added
+                // get the current symbol table in case it needs to be added
                 currentSymbolTable = symbolTables.get(scopeStack.peek());
 
                 if (scopeStack.peek() == 0) {
@@ -161,7 +158,7 @@ static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
 
         // add to symbol table if not there
 
-        if (Objects.equals(lexemeNameE1, "ID") && currentSymbolTable.getSymbol(exprE1) == null) {
+        if (currentSymbolTable.getSymbol(exprE1) == null) {
             System.out.println("\nAssignment Statement => ERROR: Variable " + exprE1 + " is NOT declared in scope");
         } else if (Objects.equals(lexemeNameE2, "ID") && currentSymbolTable.getSymbol(exprE2) == null) {
             System.out.println("\nAssignment Statement => ERROR: Variable " + exprE2 + " is NOT declared in scope");
@@ -175,8 +172,8 @@ static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
                 if (symbolTable != null) {
                     symbolTable.replaceSymbol(newSymbol);
                 }
-
-            } else if (Objects.equals(lexemeNameE2, "ID")) {
+            }
+            if (Objects.equals(lexemeNameE2, "ID")) {
                 Symbol symbol = currentSymbolTable.getSymbol(exprE2);
                 Symbol newSymbol = symbol.withUsed(true);
                 int symbolScope = currentSymbolTable.getSymbol(exprE2).scopeId();
@@ -185,7 +182,6 @@ static final SymbolTableTree mySymbolTableTree = new SymbolTableTree();
                 if (symbolTable != null) {
                     symbolTable.replaceSymbol(newSymbol);
                 }
-
             }
             if (!typeCheck(node, scopeStack)) {
                 System.out.println("Assignment Statement => ERROR: Type MISMATCH! for " + exprE1 + " and " + exprE2);
