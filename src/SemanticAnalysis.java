@@ -53,12 +53,13 @@ public class SemanticAnalysis extends Tree{
             System.out.println("\n AST for program " + PROGRAM_NUMBER + " ...\n");
 
             Tree tree = new Tree();
-            //tree.print(myAST);
+            tree.print(myAST);
 
+            CodeGenerator.getAST(PROGRAM_NUMBER, myAST);
             buildSymbolTable(myAST);
 
             // pass the AST and the Symbol Tables here to Code Generator
-            CodeGenerator.init_code_generator(myAST, mySymbolTableTree);
+            CodeGenerator.init_code_generator(PROGRAM_NUMBER, myAST, mySymbolTableTree);
 
             // clear the AST and tree of hash tables for the next program
             myAST.clear();
@@ -72,7 +73,8 @@ public class SemanticAnalysis extends Tree{
 
         Node root = myAST.root;
 
-        mySymbolTableTree = processAST.traverseAST(root);
+        ProcessAST.traverseAST(root);
+
 
     }
     /**
