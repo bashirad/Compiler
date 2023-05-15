@@ -1,5 +1,9 @@
+import java.util.Objects;
+
 public class Memory {
-    private String[][] memoryArray;
+    private int heapStartCol;
+    private int heapStartRow;
+    public String[][] memoryArray;
     private int stackPointer;
     private int heapPointer;
     private int zFlag;
@@ -9,6 +13,8 @@ public class Memory {
         this.stackPointer = 0;
         this.heapPointer = 0;
         this.zFlag = 0;
+        this.heapStartRow = 31;
+        this.heapStartCol = 7;
     }
 
     public void initializeMem (String str) {
@@ -35,30 +41,81 @@ public class Memory {
     }
 
     public void addToStack(String value) {
-        if (this.stackPointer < memoryArray.length) {
+        if (this.stackPointer < 256) {
             int row = this.stackPointer / 8;
             int col = this.stackPointer % 8;
             this.memoryArray[row][col] = value;
             this.stackPointer++;
+
         } else {
             throw new RuntimeException("Stack overflow!");
         }
     }
 
-    public void addToHeap(String value) {
-        if (this.heapPointer < 32 * 8) {
-            if (this.heapPointer < this.stackPointer) {
-                int row = this.heapPointer / 8 + 32;
-                int col = this.heapPointer % 8;
-                this.memoryArray[row][col] = value;
-                this.heapPointer++;
-            } else {
-                throw new RuntimeException("Heap overflow!");
+
+
+    public String [] addToHeap(String str) {
+        String [] result = new String [2];
+        int stringLength = str.length() + 1;
+        int space = 0;
+        int beginRow = 0;
+        int beginCol = 0;
+
+        for (int i = heapStartRow; i > 0; i--) {
+            for (int j = heapStartCol; j > 0; j--) {
+                if (Objects.equals(memoryArray[i][j], "00")) {
+                    space++;
+                    if (space == stringLength) {
+                        beginRow = i;
+                        beginCol = j;
+                        break;
+                    }
+                }
             }
-        } else {
-            throw new RuntimeException("Heap overflow!");
         }
+
+        result[0] = String.valueOf(beginRow);
+        result[1] = String.valueOf(beginCol);
+        
+        return result;
     }
+
+    public void copyStringToMemory(String str, String beginRow, String beginCol) {
+        int currentRow = Integer.parseInt(beginRow);
+        int currentCol = Integer.parseInt(beginCol);
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            String hex = Integer.toHexString((int) c).toUpperCase();
+            memoryArray[currentRow][currentCol] = hex;
+            currentCol++;
+            if (currentCol == 8) {
+                currentRow++;
+                currentCol = 0;
+            }
+        }
+        memoryArray[currentRow][currentCol] = "00";
+
+    }
+
+    public String getHexStringFromMemoryAddress(int row, int col) {
+        int address = row * 8 + col;
+        String hexString = Integer.toHexString(address).toUpperCase();
+        return hexString;
+    }
+    public String getStringAddress(String value) {
+            // Convert the string to a hex string
+            String hexString = "";
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                String hex = Integer.toHexString((int) c).toUpperCase();
+                hexString += hex;
+            }
+            hexString += "00";
+
+            // Add the hex string to the heap
+           // return addToHeap(hexString);
+        return "test";
+        }
 
 
     public int getCurrentStackLocation() {
