@@ -12,6 +12,9 @@ public class CodeGenerator extends SymbolTableTree{
     private static int currentTempNum = 0;
     private static int currentTempAdd = 0;
 
+    private static int startJump = 0;
+    private static int endJump = 0;
+    private static int jumpSize = 0;
     private static int jumpNum = 0;
     public static void init_code_generator (int prog_num, Tree ast, SymbolTableTree symbolTableTree) {
 
@@ -32,13 +35,13 @@ public class CodeGenerator extends SymbolTableTree{
 
         updateTempVariables();
 
+        updateJumps();
+
         myStaticTable.printTable();
 
+        myJumps.printTable();
+
         myMemory.printMemory();
-
-        // Get all symbol tables
-        Map<Integer, SymbolTable> symbolTables = SymbolTableTree.symbolTables;
-
    }
     public static void traverseAST(Tree.Node root, SymbolTableTree symbolTableTree) {
 
@@ -75,9 +78,10 @@ public class CodeGenerator extends SymbolTableTree{
                 processAssignStmt(node, scopeStack);
             } else if (Objects.equals(name, "Print Statement")) {
                 processPrintStmt(node, scopeStack);
-            } else if (Objects.equals(name, "EQUAL_TO_OP")
-                    || Objects.equals(name, "NOT_EQUAL_TO_OP")) {
+            } else if (Objects.equals(name, "EQUAL_TO_OP")) {
                 processIsEqual(node, scopeStack);
+            } else if (Objects.equals(name, "NOT_EQUAL_TO_OP")) {
+                processNotEqual(node, scopeStack);
             }
 
 
@@ -90,6 +94,14 @@ public class CodeGenerator extends SymbolTableTree{
             // remove the current scope from the stack.
             if (Objects.equals(name, "Block")) {
                 scopeStack.pop();
+
+                if (Objects.equals(node.getParent().getName(), "If Statement")) {
+                    endJump = myMemory.getCurrentStackLocation();
+                    jumpSize = endJump - startJump;
+
+                    myJumps.setJumpDistance("J"+jumpNum, jumpSize);
+                    jumpNum++;
+                }
             }
         }
     }
@@ -156,6 +168,10 @@ public class CodeGenerator extends SymbolTableTree{
         try {
             int value = Integer.parseInt(exprA);
             String hexValue = Integer.toHexString(value);
+
+            if (hexValue.length() == 1) {
+                hexValue = "0" + hexValue;
+            }
 
             myMemory.addToStack("A9");
             myMemory.addToStack(hexValue.toUpperCase());
@@ -276,24 +292,16 @@ public class CodeGenerator extends SymbolTableTree{
 
     }
 
-
     private static void processIsEqual(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node left = node.getChildren().get(0);
         Tree.Node right = node.getChildren().get(1);
 
-        String lexemeNameE1 = left.getTokens().lexemeName;
-        String lexemeNameE2 = right.getTokens().lexemeName;
-
         String exprE1 = left.getName();
         String exprE2 = right.getName();
 
-        // add to symbol table if not there
-        int currentScope = scopeStack.peek();
-        SymbolTable currentSymbolTable = symbolTables.get(currentScope);
-
         // variable == or !=  to an int
         myMemory.addToStack("A2");
-        myMemory.addToStack(exprE2);
+        myMemory.addToStack("0"+exprE2);
 
         myMemory.addToStack("EC");
         myMemory.addToStack(myStaticTable.getVariableTempAddress(exprE1)[0]);
@@ -302,8 +310,67 @@ public class CodeGenerator extends SymbolTableTree{
         myMemory.addToStack("D0");
         myJumps.addJump("J"+jumpNum, 0);
         myMemory.addToStack("J"+jumpNum);
-        jumpNum++;
 
+        startJump = myMemory.getCurrentStackLocation();
+
+    }
+    private static void processNotEqual(Tree.Node node, Stack<Integer> scopeStack) {
+        Tree.Node left = node.getChildren().get(0);
+        Tree.Node right = node.getChildren().get(1);
+
+        String exprE1 = left.getName();
+        String exprE2 = right.getName();
+
+        // while (a != 5) { ... }
+        // Load Accumulator from memory
+        myMemory.addToStack("AD");
+        myMemory.addToStack(myStaticTable.getVariableTempAddress(exprE1)[0]);
+        myMemory.addToStack(myStaticTable.getVariableTempAddress(exprE1)[1]);
+
+        myMemory.addToStack("8D");
+        myMemory.addToStack("94");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("A9");
+        myMemory.addToStack(exprE2);
+
+        myMemory.addToStack("8D");
+        myMemory.addToStack("93");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("AE");
+        myMemory.addToStack("94");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("EC");
+        myMemory.addToStack("93");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("A9");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("D0");
+        myMemory.addToStack("02");
+
+        myMemory.addToStack("A9");
+        myMemory.addToStack("01");
+
+        myMemory.addToStack("A2");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("8D");
+        myMemory.addToStack("93");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("EC");
+        myMemory.addToStack("93");
+        myMemory.addToStack("00");
+
+        myMemory.addToStack("D0");
+        myJumps.addJump("J"+jumpNum, 0);
+        myMemory.addToStack("J"+jumpNum);
+
+        startJump = myMemory.getCurrentStackLocation();
     }
 
     public static void updateTempVariables() {
@@ -315,8 +382,6 @@ public class CodeGenerator extends SymbolTableTree{
                 String memoryValue = myMemory.memoryArray[i][j];
                 if (memoryValue.startsWith("T")) {
                     String temp = memoryValue.concat("XX");
-                    System.out.println((temp));
-                    System.out.println(myStaticTable.getAddress(temp));
 
                     String address = Integer.toHexString(myStaticTable.getAddress(temp)).toUpperCase();
 
@@ -327,11 +392,26 @@ public class CodeGenerator extends SymbolTableTree{
             }
         }
     }
+    public static void updateJumps() {
+        int currentAddress = myMemory.getCurrentStackLocation();
+        int numTempVars = myStaticTable.getNumTempVars();
 
+        for (int i = 0; i < 32; i++) {
+            for (int j = 0; j < 8; j++) {
+                String memoryValue = myMemory.memoryArray[i][j];
+                if (memoryValue.startsWith("J")) {
 
+                    String address = Integer.toHexString(myJumps.getJumpDistance(memoryValue)).toUpperCase();
 
+                    if (address.length() == 1) {
+                        address = "0" + address;
+                    }
 
-
+                    myMemory.memoryArray[i][j] = address;
+                }
+            }
+        }
+    }
     // NO TYPE CHECKING HERE
     private static Boolean typeCheck(Tree.Node node, Stack<Integer> scopeStack) {
         Tree.Node left = node.getChildren().get(0);

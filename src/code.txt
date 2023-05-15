@@ -1,8 +1,8 @@
 {
-
-string a
-a = "alan"
-
-print(a)
-
-}$
+ int a
+ a = 1
+ if (a != 5) {
+ a = 1 + a
+ print(a)
+ }
+} $
