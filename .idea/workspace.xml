@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ae957f00-b018-4c9e-9910-88cfda2a48de" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/Jumps.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CodeGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CodeGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Memory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Memory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/StaticTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/StaticTable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Workstation1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Workstation1.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Jumps.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Jumps.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/code.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/code.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
